@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+
+# Env & secrets
+.env
+.env.local
+!*.example
+
+# Reports generated
+backend/app/generated_reports/*
+!backend/app/generated_reports/.gitkeep
+
+# Data / datasets downloaded
+backend/data/raw/*
+!backend/data/raw/.gitkeep
+*.parquet
+*.csv
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

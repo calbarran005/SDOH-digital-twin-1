@@ -72,7 +72,8 @@ cp .env.example .env
 docker compose up -d --build
 
 # 3. Cargar el dataset demo (hospitales, census tracts, indicadores SDOH, índices de equidad, alertas)
-make seed
+docker compose exec backend python -m app.scripts.seed
+
 # o bien: docker compose exec backend python -m app.scripts.seed
 
 # 4. Acceder

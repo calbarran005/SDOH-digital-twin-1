@@ -1,12 +1,14 @@
+import os
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_permission
 from app.core.database import get_db
+from app.core.security import decode_token
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.report import ReportOut, ReportRequest
@@ -14,6 +16,13 @@ from app.services.audit_service import audit
 from app.services.report_service import GENERATORS, REPORT_DIR, _fetch_data
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
+
+MIME_TYPES = {
+    "pdf": "application/pdf",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "csv": "text/csv; charset=utf-8",
+}
 
 
 @router.get("", response_model=List[ReportOut])
@@ -90,10 +99,40 @@ def generate_report(
 @router.get("/download/{report_id}")
 def download_report(
     report_id: int,
+    token: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
+    jwt_token = None
+    if authorization and authorization.startswith("Bearer "):
+        jwt_token = authorization.replace("Bearer ", "").strip()
+    elif token:
+        jwt_token = token
+
+    if not jwt_token:
+        raise HTTPException(status_code=401, detail="No autenticado para descargar")
+
+    payload = decode_token(jwt_token)
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Usuario no identificado")
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="Usuario desactivado")
+
     report = db.query(Report).get(report_id)
-    if not report or report.status != "generated" or not report.file_path:
-        raise HTTPException(status_code=404, detail="Reporte no disponible")
-    return FileResponse(report.file_path, filename=report.filename)
+    if not report or report.status != "generated" or not report.file_path or not os.path.exists(report.file_path):
+        raise HTTPException(status_code=404, detail="El archivo del reporte no existe o aún no ha sido generado")
+
+    ext = report.filename.split(".")[-1].lower() if report.filename else "pdf"
+    media_type = MIME_TYPES.get(ext, "application/octet-stream")
+
+    return FileResponse(
+        path=report.file_path,
+        filename=report.filename,
+        media_type=media_type,
+    )

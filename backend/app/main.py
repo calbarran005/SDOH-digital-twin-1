@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, geo, hospitals, reports, sdoh, users
+from app.api import auth, ai, geo, hospitals, reports, sdoh, users
 from app.core.config import settings
 
 # Register models so metadata is complete
@@ -141,7 +141,8 @@ import json
 origins = json.loads(settings.BACKEND_CORS_ORIGINS or "[]")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins if origins else ["*"],
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -154,6 +155,7 @@ app.include_router(geo.router, prefix=API_PREFIX)
 app.include_router(hospitals.router, prefix=API_PREFIX)
 app.include_router(sdoh.router, prefix=API_PREFIX)
 app.include_router(reports.router, prefix=API_PREFIX)
+app.include_router(ai.router, prefix=API_PREFIX)
 
 
 @app.get("/")

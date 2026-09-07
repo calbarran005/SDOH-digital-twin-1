@@ -35,9 +35,13 @@ SDOH_INDICATORS = [
 ]
 
 
+from app.main import init_default_data
+
+
 def seed():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    init_default_data()
     db = SessionLocal()
     try:
         random.seed(42)

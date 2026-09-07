@@ -1,108 +1,54 @@
 import { useEffect, useState } from "react";
-import { Save, User as UserIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { User, Shield, Key, Clock } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../store/auth";
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const [fullName, setFullName] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [department, setDepartment] = useState("");
-  const [organization, setOrganization] = useState("");
-  const [phone, setPhone] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    if (user?.profile) {
-      setFullName(user.profile.full_name || "");
-      setJobTitle(user.profile.job_title || "");
-      setDepartment(user.profile.department || "");
-      setOrganization(user.profile.organization || "");
-      setPhone(user.profile.phone || "");
-    }
-  }, [user]);
-
-  const save = async () => {
-    try {
-      await api.patch(`/users/${user!.id}/profile`, {
-        full_name: fullName,
-        job_title: jobTitle,
-        department,
-        organization,
-        phone,
-      });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
-  };
+    api.get("/users/me").then((r) => setProfile(r.data)).catch(() => {});
+  }, []);
 
   return (
     <div>
       <div className="topbar">
-        <h2 className="page-title">Mi perfil</h2>
+        <div className="page-title-group">
+          <h2 className="page-title">{t("profile.title")}</h2>
+          <p className="page-subtitle">{t("profile.subtitle")}</p>
+        </div>
       </div>
 
       <div className="grid grid-2">
         <div className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: "50%",
-              background: "#1d4ed8", display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <UserIcon size={24} />
-            </div>
-            <div>
-              <b style={{ fontSize: 16 }}>{user?.profile?.full_name || user?.username}</b>
-              <div className="text-muted" style={{ fontSize: 12 }}>{user?.email}</div>
-            </div>
-          </div>
-          <div className="field">
-            <label>Nombre completo</label>
-            <input className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Cargo</label>
-            <input className="input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Departamento</label>
-            <input className="input" value={department} onChange={(e) => setDepartment(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Organización</label>
-            <input className="input" value={organization} onChange={(e) => setOrganization(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Teléfono</label>
-            <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </div>
-          <button className="btn" onClick={save}>
-            <Save size={15} style={{ marginRight: 4 }} /> {saved ? "Guardado ✓" : "Guardar cambios"}
-          </button>
+          <h3 style={{ marginTop: 0 }}><User size={18} style={{ color: "#60a5fa" }} />{t("profile.sessionInfo")}</h3>
+          <div className="field"><label>{t("profile.username")}</label><div className="input" style={{ background: "var(--bg-surface)" }}>{profile?.username || user?.username || "—"}</div></div>
+          <div className="field"><label>{t("profile.email")}</label><div className="input" style={{ background: "var(--bg-surface)" }}>{profile?.email || user?.email || "—"}</div></div>
+          <div className="field"><label>{t("profile.fullName")}</label><div className="input" style={{ background: "var(--bg-surface)" }}>{profile?.profile?.full_name || "—"}</div></div>
+          <div className="field"><label>{t("profile.organization")}</label><div className="input" style={{ background: "var(--bg-surface)" }}>{profile?.profile?.organization || "—"}</div></div>
         </div>
 
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>Mis roles y permisos</h3>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            {user?.roles.map((r) => (
-              <span key={r.id} className="badge blue" style={{ fontSize: 13, padding: "5px 12px" }}>
-                {r.name}
-              </span>
-            ))}
-            {user?.is_superuser && (
-              <span className="badge red" style={{ fontSize: 13, padding: "5px 12px" }}>
-                Superusuario
-              </span>
-            )}
-          </div>
-          <hr className="divider" />
-          <div className="stat-label">Cuenta creada</div>
-          <div className="stat-value" style={{ fontSize: 15 }}>
-            {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
-          </div>
-          <div className="stat-label" style={{ marginTop: 12 }}>Último acceso</div>
-          <div className="stat-value" style={{ fontSize: 15 }}>
-            {user?.last_login ? new Date(user.last_login).toLocaleString() : "—"}
+          <h3 style={{ marginTop: 0 }}><Shield size={18} style={{ color: "#60a5fa" }} />{t("profile.roles")}</h3>
+          {profile?.roles?.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {profile.roles.map((r: any) => (
+                <div key={r.id} className="card" style={{ padding: 14, background: "var(--bg-surface)" }}>
+                  <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{r.name}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 4 }}>{r.description}</div>
+                </div>
+              ))}
+            </div>
+          ) : <div className="text-muted">{t("profile.noRoles")}</div>}
+
+          <h3 style={{ marginTop: 22 }}><Key size={18} style={{ color: "#60a5fa" }} />{t("profile.permissions")}</h3>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {profile?.roles?.flatMap((r: any) => r.permissions?.map((p: any) => p.code) || [])?.filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)?.map((perm: string) => (
+              <span key={perm} className="badge gray">{perm}</span>
+            )) || <span className="text-muted">—</span>}
           </div>
         </div>
       </div>

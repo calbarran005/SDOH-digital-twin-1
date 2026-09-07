@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -15,6 +16,7 @@ import Profile from "./pages/Profile";
 
 export default function App() {
   const { loadUser, loading, token } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (token) loadUser();
@@ -22,7 +24,7 @@ export default function App() {
   }, [token]);
 
   if (loading) {
-    return <div className="auth-wrap">Cargando…</div>;
+    return <div className="auth-wrap">{t("loading.app")}</div>;
   }
 
   return (

@@ -16,6 +16,7 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +33,11 @@ export default function AIChat() {
     setLoading(true);
 
     try {
-      const res = await api.post("/ai/chat", { message: text, language });
+      const res = await api.post("/ai/chat", {
+        message: text,
+        language,
+        session_id: sessionId,
+      });
       setMessages((prev) => [...prev, { role: "assistant", content: res.data.reply }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: t("ai.error") }]);
@@ -50,6 +55,7 @@ export default function AIChat() {
 
   const clearChat = () => {
     setMessages([]);
+    setSessionId(crypto.randomUUID());
   };
 
   return (

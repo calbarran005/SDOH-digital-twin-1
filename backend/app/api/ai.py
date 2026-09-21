@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -12,6 +12,7 @@ router = APIRouter(prefix="/ai", tags=["AI Assistant"])
 class ChatRequest(BaseModel):
     message: str
     language: str = "es"
+    session_id: str | None = Field(default=None, max_length=64)
 
 
 class ChatResponse(BaseModel):
@@ -22,11 +23,14 @@ class ChatResponse(BaseModel):
 def ai_chat(
     body: ChatRequest,
     db: Session = Depends(get_db),
-    _user=Depends(get_current_user),
+    user=Depends(get_current_user),
 ):
+    # Prefijo con el id del usuario para que nadie lea la memoria de otro usuario
+    session_id = f"user-{user.id}-{body.session_id}" if body.session_id else None
     reply = chat_with_ai(
         message=body.message,
         language=body.language,
         db_session=db,
+        session_id=session_id,
     )
     return ChatResponse(reply=reply)

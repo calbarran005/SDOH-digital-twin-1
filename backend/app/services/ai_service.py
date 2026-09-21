@@ -1,12 +1,20 @@
 import logging
 import os
 
+import requests
 from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+
+AI_PROVIDER = os.getenv("AI_PROVIDER", "openai").lower()
+LANGFLOW_BASE_URL = os.getenv("LANGFLOW_BASE_URL", "http://localhost:7860").rstrip("/")
+LANGFLOW_FLOW_ID = os.getenv("LANGFLOW_FLOW_ID", "sdoh-assistant")
+LANGFLOW_API_KEY = os.getenv("LANGFLOW_API_KEY", "")
+LANGFLOW_PROMPT_NODE = os.getenv("LANGFLOW_PROMPT_NODE", "Prompt Template")
+LANGFLOW_TIMEOUT = float(os.getenv("LANGFLOW_TIMEOUT", "120"))
 
 SYSTEM_PROMPT_EN = """You are a specialized SDOH (Social Determinants of Health) assistant for a Digital Twin platform.
 You have access to data about hospitals, census tracts, equity indices, and health alerts for a metropolitan area.
@@ -93,7 +101,51 @@ def build_sdoh_context(db_session) -> str:
     return "\n\n".join(context_parts)
 
 
-def chat_with_ai(message: str, language: str = "es", db_session=None) -> str:
+def chat_with_ai(
+    message: str, language: str = "es", db_session=None, session_id: str | None = None
+) -> str:
+    """Send a message to the configured AI provider with SDOH context."""
+    if AI_PROVIDER == "langflow":
+        return chat_with_langflow(message, language, db_session, session_id)
+    return chat_with_openai(message, language, db_session)
+
+
+def chat_with_langflow(
+    message: str, language: str = "es", db_session=None, session_id: str | None = None
+) -> str:
+    """Run the SDOH Assistant flow in Langflow (see langflow/sdoh_assistant.json)."""
+    context = build_sdoh_context(db_session) if db_session else "(none)"
+    payload = {
+        "input_value": message,
+        "input_type": "chat",
+        "output_type": "chat",
+        "tweaks": {
+            LANGFLOW_PROMPT_NODE: {
+                "sdoh_context": context,
+                "language": "Spanish" if language == "es" else "English",
+            }
+        },
+    }
+    if session_id:
+        payload["session_id"] = session_id
+
+    headers = {"x-api-key": LANGFLOW_API_KEY} if LANGFLOW_API_KEY else {}
+    response = requests.post(
+        f"{LANGFLOW_BASE_URL}/api/v1/run/{LANGFLOW_FLOW_ID}",
+        json=payload,
+        headers=headers,
+        timeout=LANGFLOW_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    try:
+        return data["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+    except (KeyError, IndexError, TypeError) as exc:
+        logger.error("Respuesta inesperada de Langflow: %s", data)
+        raise RuntimeError("Respuesta inesperada de Langflow") from exc
+
+
+def chat_with_openai(message: str, language: str = "es", db_session=None) -> str:
     """Send a message to OpenAI with SDOH context and return the response."""
     system_prompt = SYSTEM_PROMPT_ES if language == "es" else SYSTEM_PROMPT_EN
     messages = [{"role": "system", "content": system_prompt}]

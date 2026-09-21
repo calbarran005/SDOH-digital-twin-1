@@ -32,6 +32,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    extra_hosts:
+      # Permite llegar a Langflow corriendo en el host (localhost:7860)
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     volumes:

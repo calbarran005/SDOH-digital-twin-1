@@ -10,7 +10,9 @@ Message History (por session_id) ─┘
 
 - El backend (`backend/app/services/ai_service.py`) llama a `POST /api/v1/run/sdoh-assistant`
   y rellena dos variables del prompt vía *tweaks* (únicos campos editables por API):
-  - `sdoh_context`: contexto sacado de la BD (hospitales, tracts, equidad, alertas).
+  - `sdoh_context`: descripción del sistema y del dataset (CDC PLACES 2025) + agregados de la BD:
+    cobertura, estadísticas por indicador y county, distribución de riesgo de equidad, top tracts
+    vulnerables, hospitales/catchments y alertas abiertas (`build_sdoh_context`).
   - `language`: `Spanish` / `English` según el idioma de la UI.
 - `session_id` = `user-<id>-<uuid del chat>`: da memoria por conversación; "Limpiar chat" abre una nueva.
 - La API key de OpenAI se lee de la variable global `OPENAI_API_KEY` de Langflow (no está en el JSON).
@@ -32,4 +34,7 @@ Message History (por session_id) ─┘
 
 Si editas el flujo en la UI de Langflow, vuelve a exportarlo aquí para versionarlo.
 No renombres el componente "Prompt Template": el backend lo busca por ese nombre (o ajusta `LANGFLOW_PROMPT_NODE`).
+En el Playground de Langflow `sdoh_context` vale `(none)` (no pasa por el backend), así que
+ahí la IA no ve la BD; pruébalo desde la app.
+
 Con `AI_PROVIDER=openai` el backend vuelve a llamar a OpenAI directamente.

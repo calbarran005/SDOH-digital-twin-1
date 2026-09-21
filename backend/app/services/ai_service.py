@@ -27,75 +27,193 @@ Responde de forma concisa y técnica en español. Usa el contexto de datos cuand
 Si no tienes suficientes datos, dilo claramente. Nunca fabriques estadísticas."""
 
 
+SYSTEM_DESCRIPTION = """SDOH Digital Twin 3D: plataforma web (FastAPI + PostGIS + React/Three.js) para monitorear
+Determinantes Sociales de la Salud (SDOH) y equidad en salud en las áreas de captación (catchments) de
+hospitales metropolitanos. Módulos de la app:
+- Dashboard 3D: gemelo digital; cada census tract es un voxel coloreado/elevado según riesgo o índice de equidad.
+- Mapa SDOH: indicadores por census tract agrupados por dominio.
+- Equidad: índice compuesto de equidad por tract (composite_equity), percentil de vulnerabilidad 0-100
+  (100 = más vulnerable) y nivel de riesgo low/moderate/high/critical.
+- Hospitales: hospitales y sus catchments (radio en km) con los tracts asignados.
+- Alertas: reglas por umbral de indicador (threshold_alert) que generan alertas por tract.
+- Reportes: exportación PDF, Word, Excel y CSV.
+- Usuarios/roles: JWT con roles admin, clínico, analista, salud pública y visor.
+- CRISP-DM: las 6 fases de la metodología de minería de datos aplicadas al proyecto.
+Dataset: CDC PLACES 2025 (data.cdc.gov, id cwsq-ngmh), dominio público. Son estimaciones modeladas
+(small-area estimation con BRFSS + Census ACS) de prevalencia en adultos (%) por census tract.
+Geometrías: Census TIGERweb."""
+
+
 def build_sdoh_context(db_session) -> str:
-    """Build a context string from the database for RAG-style prompting."""
+    """Build a context string from the database for RAG-style prompting.
+
+    Includes a description of the platform plus aggregates of the public dataset
+    (coverage, indicator statistics, equity distribution, hospitals and alerts).
+    """
+    from sqlalchemy import func
     from sqlalchemy.exc import SQLAlchemyError
 
-    from app.models.geo import CensusTract, Hospital, HospitalCatchment
+    from app.models.geo import (
+        CatchmentMembership,
+        CensusTract,
+        County,
+        Hospital,
+        HospitalCatchment,
+    )
     from app.models.sdoh import Alert, EquityIndex, IndicatorCatalog, SDOHIndicator
 
-    context_parts = []
+    context_parts = [SYSTEM_DESCRIPTION]
     try:
-        hospital_count = db_session.query(Hospital).count()
+        # --- Cobertura ---
         tract_count = db_session.query(CensusTract).count()
-        catchment_count = db_session.query(HospitalCatchment).count()
+        population = db_session.query(func.sum(CensusTract.total_population)).scalar() or 0
+        years = [y for (y,) in db_session.query(SDOHIndicator.year).distinct().order_by(SDOHIndicator.year)]
+        latest_year = years[-1] if years else None
+        counties = db_session.query(County).order_by(County.geoid).all()
+        county_names = {c.id: c.name for c in counties}
         context_parts.append(
-            f"Hospitals: {hospital_count}, Census Tracts: {tract_count}, "
-            f"Catchment Areas: {catchment_count}"
+            "Cobertura de la BD:\n"
+            + "\n".join(f"- {c.name}, {c.state_name} (FIPS {c.geoid})" for c in counties)
+            + f"\n- Census tracts: {tract_count}, población total: {population:,}"
+            + f"\n- Años con datos: {', '.join(map(str, years)) or 'ninguno'}"
         )
 
-        indicators = (
-            db_session.query(
-                IndicatorCatalog.code,
-                CensusTract.geoid,
-                SDOHIndicator.value,
-                SDOHIndicator.year,
+        # --- Indicadores (último año): media global, rango y media por county ---
+        if latest_year is not None:
+            rows = (
+                db_session.query(
+                    IndicatorCatalog.code,
+                    IndicatorCatalog.name,
+                    IndicatorCatalog.domain,
+                    IndicatorCatalog.higher_is_better,
+                    IndicatorCatalog.threshold_alert,
+                    func.avg(SDOHIndicator.value),
+                    func.min(SDOHIndicator.value),
+                    func.max(SDOHIndicator.value),
+                    func.count(SDOHIndicator.id),
+                )
+                .join(IndicatorCatalog, SDOHIndicator.catalog_id == IndicatorCatalog.id)
+                .filter(SDOHIndicator.year == latest_year)
+                .group_by(IndicatorCatalog.id)
+                .order_by(IndicatorCatalog.domain, IndicatorCatalog.code)
+                .all()
             )
-            .join(IndicatorCatalog, SDOHIndicator.catalog_id == IndicatorCatalog.id)
-            .join(CensusTract, SDOHIndicator.tract_id == CensusTract.id)
-            .order_by(SDOHIndicator.year.desc(), SDOHIndicator.id.desc())
-            .limit(10)
-            .all()
-        )
-        if indicators:
-            ind_list = [
-                f"- {code}: value={value}, tract={geoid}, year={year}"
-                for code, geoid, value, year in indicators
-            ]
-            context_parts.append("Recent SDOH Indicators:\n" + "\n".join(ind_list))
-
-        equity = (
-            db_session.query(
-                CensusTract.geoid,
-                EquityIndex.value,
-                EquityIndex.percentile,
-                EquityIndex.risk_level,
+            by_county = {}
+            for code, county_id, avg in (
+                db_session.query(IndicatorCatalog.code, CensusTract.county_id, func.avg(SDOHIndicator.value))
+                .join(IndicatorCatalog, SDOHIndicator.catalog_id == IndicatorCatalog.id)
+                .join(CensusTract, SDOHIndicator.tract_id == CensusTract.id)
+                .filter(SDOHIndicator.year == latest_year)
+                .group_by(IndicatorCatalog.code, CensusTract.county_id)
+                .all()
+            ):
+                by_county.setdefault(code, []).append(f"{county_names.get(county_id, county_id)}={avg:.1f}")
+            lines = []
+            for code, name, domain, hib, threshold, avg, vmin, vmax, n in rows:
+                extra = f", umbral alerta={threshold}" if threshold is not None else ""
+                better = "mayor es mejor" if hib else "menor es mejor"
+                lines.append(
+                    f"- {code} | {name} | {domain} | {better}{extra} | media={avg:.1f}, "
+                    f"min={vmin:.1f}, max={vmax:.1f}, n={n} | por county: {', '.join(by_county.get(code, []))}"
+                )
+            context_parts.append(
+                f"Indicadores SDOH {latest_year} (prevalencia % en adultos por tract):\n" + "\n".join(lines)
             )
-            .join(CensusTract, EquityIndex.tract_id == CensusTract.id)
-            .filter(EquityIndex.percentile.is_not(None))
-            .order_by(EquityIndex.percentile.desc())
-            .limit(5)
-            .all()
-        )
-        if equity:
-            eq_list = [
-                f"- Tract {geoid}: index={value:.3f}, "
-                f"vulnerability_pct={percentile}, risk={risk}"
-                for geoid, value, percentile, risk in equity
-            ]
-            context_parts.append("Top Vulnerable Tracts:\n" + "\n".join(eq_list))
 
-        alerts = (
-            db_session.query(Alert).filter(Alert.status == "open").limit(5).all()
-        )
-        if alerts:
-            al_list = [
-                f"- {a.indicator_name}: severity={a.severity}, value={a.observed_value}"
-                for a in alerts
-            ]
-            context_parts.append("Open Alerts:\n" + "\n".join(al_list))
+        # --- Equidad (último año) ---
+        eq_year = db_session.query(func.max(EquityIndex.year)).scalar()
+        if eq_year is not None:
+            dist = (
+                db_session.query(CensusTract.county_id, EquityIndex.risk_level, func.count(EquityIndex.id))
+                .join(CensusTract, EquityIndex.tract_id == CensusTract.id)
+                .filter(EquityIndex.year == eq_year, EquityIndex.index_type == "composite_equity")
+                .group_by(CensusTract.county_id, EquityIndex.risk_level)
+                .all()
+            )
+            per_county = {}
+            for county_id, risk, n in dist:
+                per_county.setdefault(county_names.get(county_id, county_id), []).append(f"{risk}={n}")
+            top = (
+                db_session.query(
+                    CensusTract.geoid,
+                    CensusTract.county_id,
+                    CensusTract.total_population,
+                    EquityIndex.value,
+                    EquityIndex.percentile,
+                    EquityIndex.risk_level,
+                )
+                .join(CensusTract, EquityIndex.tract_id == CensusTract.id)
+                .filter(
+                    EquityIndex.year == eq_year,
+                    EquityIndex.index_type == "composite_equity",
+                    EquityIndex.percentile.is_not(None),
+                )
+                .order_by(EquityIndex.percentile.desc())
+                .limit(10)
+                .all()
+            )
+            context_parts.append(
+                f"Índice de equidad compuesto {eq_year}, tracts por nivel de riesgo:\n"
+                + "\n".join(f"- {name}: {', '.join(v)}" for name, v in per_county.items())
+                + "\nTop 10 tracts más vulnerables:\n"
+                + "\n".join(
+                    f"- {geoid} ({county_names.get(cid, cid)}, pobl. {pop}): índice={value:.3f}, "
+                    f"percentil vulnerabilidad={pct}, riesgo={risk}"
+                    for geoid, cid, pop, value, pct, risk in top
+                )
+            )
+
+        # --- Hospitales y catchments ---
+        hosp_lines = []
+        for h in db_session.query(Hospital).order_by(Hospital.name).all():
+            for c in db_session.query(HospitalCatchment).filter(HospitalCatchment.hospital_id == h.id).all():
+                tract_ids = db_session.query(CatchmentMembership.tract_id).filter(
+                    CatchmentMembership.catchment_id == c.id
+                )
+                n_tracts = tract_ids.count()
+                pop = (
+                    db_session.query(func.sum(CensusTract.total_population))
+                    .filter(CensusTract.id.in_(tract_ids))
+                    .scalar()
+                    or 0
+                )
+                risk = dict(
+                    db_session.query(EquityIndex.risk_level, func.count(EquityIndex.id))
+                    .filter(
+                        EquityIndex.tract_id.in_(tract_ids),
+                        EquityIndex.year == eq_year,
+                        EquityIndex.index_type == "composite_equity",
+                    )
+                    .group_by(EquityIndex.risk_level)
+                    .all()
+                )
+                hosp_lines.append(
+                    f"- {h.name} ({h.city}, {h.state}): catchment {c.catchment_type} "
+                    f"{c.radius_km} km, {n_tracts} tracts, población {pop:,}, "
+                    f"riesgo: {', '.join(f'{k}={v}' for k, v in sorted(risk.items()))}"
+                )
+        if hosp_lines:
+            context_parts.append("Hospitales y áreas de captación:\n" + "\n".join(hosp_lines))
+
+        # --- Alertas abiertas ---
+        open_alerts = db_session.query(Alert).filter(Alert.status == "open")
+        total_alerts = open_alerts.count()
+        if total_alerts:
+            by_ind = (
+                db_session.query(Alert.indicator_name, Alert.severity, func.count(Alert.id))
+                .filter(Alert.status == "open")
+                .group_by(Alert.indicator_name, Alert.severity)
+                .order_by(func.count(Alert.id).desc())
+                .limit(15)
+                .all()
+            )
+            context_parts.append(
+                f"Alertas abiertas: {total_alerts}. Por indicador:\n"
+                + "\n".join(f"- {name} ({sev}): {n}" for name, sev, n in by_ind)
+            )
     except SQLAlchemyError as exc:
         logger.warning("No se pudo construir el contexto SDOH: %s", exc)
+        db_session.rollback()
         context_parts.append("(Database context unavailable)")
 
     return "\n\n".join(context_parts)

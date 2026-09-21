@@ -13,6 +13,7 @@ import Alerts from "./pages/Alerts";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Profile from "./pages/Profile";
+import CrispDm from "./pages/CrispDm";
 
 export default function App() {
   const { loadUser, loading, token } = useAuth();
@@ -41,6 +42,8 @@ export default function App() {
           <Route path="/reportes" element={<Reports />} />
           <Route path="/usuarios" element={<Users />} />
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/crisp-dm" element={<CrispDm />} />
+          <Route path="/crisp-dm/:phase" element={<CrispDm />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

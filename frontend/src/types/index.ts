@@ -70,3 +70,30 @@ export interface GeoFeature {
   };
   geometry?: Record<string, any> | null;
 }
+
+export interface CrispPhase {
+  key: string;
+  order: number;
+  roman: string;
+  name: string;
+  name_en: string;
+  layer: string;
+  objectives: string[];
+  question: string;
+  ready: boolean;
+}
+
+export interface CrispPhaseOverview {
+  year: number;
+  phases: CrispPhase[];
+  completed: number;
+  total: number;
+  counts: {
+    tracts: number;
+    indicators: number;
+    values: number;
+    computed_indexes: number;
+    alerts: number;
+    audit_events: number;
+  };
+}

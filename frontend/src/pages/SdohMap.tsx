@@ -30,7 +30,7 @@ export default function SdohMap() {
 
   useEffect(() => {
     api.get("/sdoh/catalog").then((r) => setCatalog(r.data)).catch(() => {});
-    api.get("/sdoh/values?year=2022&limit=2000").then((r) => setValues(r.data)).catch(() => {});
+    api.get("/sdoh/values?year=2023&limit=2000").then((r) => setValues(r.data)).catch(() => {});
   }, []);
 
   const domains = useMemo(() => {

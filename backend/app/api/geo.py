@@ -1,4 +1,3 @@
-import json
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,11 +18,9 @@ def _geom_to_geojson(geom_obj):
         return None
     try:
         data = getattr(geom_obj, "data", None) or geom_obj
-        if isinstance(data, bytes):
-            return json.loads(wkb.loads(data).__geo_interface__)
         if isinstance(data, str):
-            return json.loads(wkt.loads(data).__geo_interface__)
-        return json.loads(wkb.loads(bytes(data)).__geo_interface__)
+            return wkt.loads(data).__geo_interface__
+        return wkb.loads(bytes(data)).__geo_interface__
     except Exception:
         return None
 

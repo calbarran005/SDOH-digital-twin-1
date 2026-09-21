@@ -19,7 +19,7 @@ export default function Reports() {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [title, setTitle] = useState("Reporte de Equidad SDOH");
   const [hospitalId, setHospitalId] = useState<number | null>(null);
-  const [year, setYear] = useState(2022);
+  const [year, setYear] = useState(2023);
   const [format, setFormat] = useState("pdf");
   const [generating, setGenerating] = useState(false);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);

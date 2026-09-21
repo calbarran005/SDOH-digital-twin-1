@@ -4,15 +4,22 @@ import { useTranslation } from "react-i18next";
 import {
   Activity,
   AlertTriangle,
+  Brain,
+  ClipboardCheck,
+  Database,
   FileText,
   Hospital,
   LayoutDashboard,
   LogOut,
   Map,
+  Rocket,
   Scale,
+  Target,
   User,
   Users,
+  Wand2,
   Menu,
+  Workflow,
   X,
 } from "lucide-react";
 import { useAuth } from "../store/auth";
@@ -49,6 +56,16 @@ export default function Layout() {
   const visible = navItems.filter(
     (item) => item.perm.length === 0 || user?.is_superuser || true
   );
+
+  // Las seis fases del modelo de proceso CRISP-DM (Chapman et al., 2000)
+  const crispPhases = [
+    { to: "/crisp-dm/business-understanding", roman: "I", label: t("crispdm.nav.business"), icon: Target },
+    { to: "/crisp-dm/data-understanding", roman: "II", label: t("crispdm.nav.dataUnderstanding"), icon: Database },
+    { to: "/crisp-dm/data-preparation", roman: "III", label: t("crispdm.nav.dataPreparation"), icon: Wand2 },
+    { to: "/crisp-dm/modeling", roman: "IV", label: t("crispdm.nav.modeling"), icon: Brain },
+    { to: "/crisp-dm/evaluation", roman: "V", label: t("crispdm.nav.evaluation"), icon: ClipboardCheck },
+    { to: "/crisp-dm/deployment", roman: "VI", label: t("crispdm.nav.deployment"), icon: Rocket },
+  ];
 
   return (
     <div className="app-shell">
@@ -113,6 +130,48 @@ export default function Layout() {
             >
               <item.icon size={18} />
               <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <nav className="nav-section">
+          <div className="nav-section-title">{t("crispdm.nav.section")}</div>
+          <NavLink
+            to="/crisp-dm"
+            end
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+          >
+            <Workflow size={18} />
+            <span>{t("crispdm.nav.overview")}</span>
+          </NavLink>
+          {crispPhases.map((phase) => (
+            <NavLink
+              key={phase.to}
+              to={phase.to}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            >
+              <phase.icon size={18} />
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {phase.label}
+              </span>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 10.5,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--text-dim)",
+                }}
+              >
+                {phase.roman}
+              </span>
             </NavLink>
           ))}
         </nav>

@@ -17,6 +17,7 @@ Aplicación full-stack de gemelos digitales 3D para monitorear determinantes soc
 | **Alertas** | Reglas de alerta configurables y generación de alertas por umbrales de indicadores. |
 | **Reportes** | Generación de reportes en **PDF, Word (.docx), Excel (.xlsx) y CSV**. |
 | **Usuarios, Roles y Perfiles** | Autenticación JWT, roles con permisos granulares (admin, clínico, analista, salud pública, visor), perfiles y auditoría. |
+| **Metodología CRISP-DM** | Las 6 fases del proceso (comprensión del negocio, comprensión de los datos, preparación, modelado, evaluación y despliegue) navegables desde el sidebar, cada una consultando el estado real del sistema. Incluye banco de pruebas de latencia y sensibilidad de pesos. Ver [`docs/CRISP-DM.md`](docs/CRISP-DM.md). |
 
 ---
 
@@ -25,7 +26,7 @@ Aplicación full-stack de gemelos digitales 3D para monitorear determinantes soc
 - **Backend:** Python 3.12 · FastAPI · SQLAlchemy · GeoAlchemy2 (PostGIS)
 - **Frontend:** React 18 · TypeScript · Vite · Three.js / React-Three-Fiber / Drei · Recharts
 - **Base de datos:** PostgreSQL 16 + PostGIS 3.4
-- **ETL:** pandas + script de importación para CDC PLACES CSV y Census ACS
+- **ETL:** descarga automática del dataset público **CDC PLACES** (Socrata, sin API key) + geometrías TIGERweb; script `app.scripts.etl_pipeline`
 
 ---
 
@@ -71,10 +72,10 @@ cp .env.example .env
 # 2. Levantar la infraestructura (PostGIS + backend + frontend)
 docker compose up -d --build
 
-# 3. Cargar el dataset demo (hospitales, census tracts, indicadores SDOH, índices de equidad, alertas)
-docker compose exec backend python -m app.scripts.seed
+# 3. Cargar el dataset (recomendado: público CDC PLACES)
+docker compose exec backend python -m app.scripts.etl_pipeline --public
 
-# o bien: docker compose exec backend python -m app.scripts.seed
+#    Alternativa demo/sintética: docker compose exec backend python -m app.scripts.seed
 
 # 4. Acceder
 #    Frontend:  http://localhost:5173
@@ -93,23 +94,36 @@ docker compose exec backend python -m app.scripts.seed
 
 ## 📦 Importar datasets públicos reales
 
-El sistema viene con un dataset **demo/sintético** para funcionar de inmediato. Para usar datos reales:
+El sistema usa **CDC PLACES** (Local Data for Better Health, Census Tract Data **2025 release**) como
+dataset público por defecto, distribuido en dominio público y accesible vía la Socrata Open Data API
+**sin necesidad de API key**. El ETL descarga automáticamente las estimaciones por census tract
+(valor + IC 95% + población) para New York County (36061) y Cook County (17031), descarga las
+geometrías reales de los tractos desde **TIGERweb** (Census Bureau), construye el catálogo SDOH,
+persiste condados/tractos/indicadores, asigna los tractos a los catchment areas de los hospitales,
+calcula los **índices de equidad reales** y genera alertas por reglas:
 
-### CDC PLACES (health outcomes + SDOH)
 ```bash
-# 1. Descargar el CSV desde https://data.cdc.gov (browse "PLACES")
-#    Guardar en backend/data/raw/places.csv
-
-# 2. Registrar los indicadores que interesan en el catálogo (vía API o seed)
-# 3. Importar
-docker compose exec backend python -m app.scripts.etl_pipeline --cdc backend/data/raw/places.csv
+make seed-public          # ETL completo con CDC PLACES (año 2022)
+# o explícitamente:
+docker compose exec backend python -m app.scripts.etl_pipeline --public --year 2022
 ```
 
-### Census ACS (American Community Survey)
-La API de Census (`https://api.census.gov`) puede consultarse con la función ETL; los indicadores ACS
-se mapean a los códigos del catálogo (ingreso, educación, vivienda, transporte, etc.).
+Opciones del ETL:
 
-Ver `backend/app/scripts/etl_pipeline.py` para los puntos de integración.
+```bash
+python -m app.scripts.etl_pipeline --public --year 2023                 # otro año
+python -m app.scripts.etl_pipeline --public --counties 17031,36061 --radius 12
+python -m app.scripts.etl_pipeline --public --offline                   # reusar CSV cacheado
+
+# Importar un CSV de CDC PLACES descargado a mano (compat)
+python -m app.scripts.etl_pipeline --cdc backend/data/raw/places.csv
+
+# Dataset demo/sintético (solo para pruebas rápidas)
+python -m app.scripts.etl_pipeline --demo    # o: make seed
+```
+
+Los CSV crudos se cachean en `backend/data/raw/places_cdc_<año>.csv`. El detalle de fuentes,
+mapeo de medidas y funciones está en `backend/app/scripts/etl_pipeline.py`.
 
 ---
 
@@ -121,7 +135,7 @@ make down        # detener
 make logs        # ver logs
 make seed        # cargar dataset demo (reinicia tablas)
 make seed-etl    # ejecutar ETL
-make migrate     # seed roles/admin (seguro de repetir)
+make migrate     # seed roles/admin + migraciones ligeras (seguro de repetir)
 make psql        # consola SQL
 ```
 
@@ -146,6 +160,10 @@ make psql        # consola SQL
 | POST | `/api/sdoh/alerts/generate` | Generar alertas por reglas |
 | POST | `/api/reports/generate` | Generar reporte (pdf/word/excel/csv) |
 | GET | `/api/reports/download/{id}` | Descargar reporte |
+| GET | `/api/crispdm/phases` | Estado de las 6 fases CRISP-DM |
+| GET | `/api/crispdm/{fase}` | Detalle de una fase (`business-understanding`, `data-understanding`, `data-preparation`, `modeling`, `evaluation`, `deployment`) |
+| POST | `/api/crispdm/evaluation/run` | Banco de pruebas: latencia (H3) y sensibilidad de pesos |
+| POST | `/api/crispdm/pipeline/run` | Ejecuta las fases III → IV → V encadenadas |
 
 Documentación interactiva completa en **http://localhost:8000/docs** (Swagger UI).
 

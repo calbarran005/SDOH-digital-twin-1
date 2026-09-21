@@ -19,7 +19,7 @@ export default function Equity() {
   const { t } = useTranslation();
   const [equity, setEquity] = useState<EquityIndex[]>([]);
   const [computing, setComputing] = useState(false);
-  const [year, setYear] = useState(2022);
+  const [year, setYear] = useState(2023);
   const [filterRisk, setFilterRisk] = useState("");
   const [searchTract, setSearchTract] = useState("");
   const [selectedTract, setSelectedTract] = useState<EquityIndex | null>(null);

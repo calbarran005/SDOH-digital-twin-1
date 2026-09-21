@@ -58,6 +58,11 @@ class EquityIndex(Base):
     """Computed equity / inequality indexes per tract (Gini, disparity, etc.)."""
 
     __tablename__ = "equity_indexes"
+    __table_args__ = (
+        UniqueConstraint(
+            "tract_id", "year", "index_type", name="uq_equity_tract_year_type"
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     tract_id = Column(ForeignKey("census_tracts.id"), nullable=False, index=True)

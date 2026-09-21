@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.get("/geo/health-system/stats").then((r) => setStats(r.data)).catch(() => {});
-    api.get(`/sdoh/equity?year=2022`).then((r) => setEquity(r.data)).catch(() => {});
+    api.get(`/sdoh/equity?year=2023`).then((r) => setEquity(r.data)).catch(() => {});
     api.get("/sdoh/alerts?limit=6").then((r) => setAlerts(r.data)).catch(() => {});
   }, []);
 

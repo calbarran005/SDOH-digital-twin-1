@@ -1,4 +1,4 @@
-.PHONY: up down build logs backend frontend seed migrate seed-all psql clean
+.PHONY: up down build logs backend frontend seed seed-etl seed-public migrate seed-all psql clean
 
 up:
 	docker compose up -d
@@ -22,7 +22,10 @@ seed:
 	docker compose exec backend python -m app.scripts.seed
 
 seed-etl:
-	docker compose exec backend python -m app.scripts.etl_pipeline
+	docker compose exec backend python -m app.scripts.etl_pipeline --public
+
+seed-public:
+	docker compose exec backend python -m app.scripts.etl_pipeline --public --year 2022
 
 migrate:
 	docker compose exec backend python -m app.scripts.migrate

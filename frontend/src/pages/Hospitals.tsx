@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Building2, MapPin, Plus, Radio, Globe } from "lucide-react";
 import api from "../api/client";
+import { errorMessage } from "../api/errors";
 import StatCard from "../components/StatCard";
 
 interface Hospital { id: number; name: string; city?: string; state?: string; cms_id?: string; }
@@ -32,7 +33,7 @@ export default function Hospitals() {
     try {
       await api.post("/hospitals", { name: newName, city: newCity, state: newState });
       setNewName(""); setNewCity(""); setNewState(""); load();
-    } catch (e: any) { alert(e?.response?.data?.detail || "Error"); } finally { setSaving(false); }
+    } catch (e: any) { alert(errorMessage(e, "Error")); } finally { setSaving(false); }
   };
 
   const selectedHospital = hospitals.find((h) => h.id === selected);

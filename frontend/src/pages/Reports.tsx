@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download, FileText, FileSpreadsheet, FileType, Loader, Sparkles } from "lucide-react";
 import api from "../api/client";
+import { errorMessage } from "../api/errors";
 
 interface Report { id: number; title: string; report_type: string; format: string; status: string; filename?: string; created_at?: string; error?: string; }
 interface Hospital { id: number; name: string; }
@@ -36,7 +37,7 @@ export default function Reports() {
     try {
       await api.post("/reports/generate", { title, report_type: "catchment_equity", format, hospital_id: hospitalId, year, domains: null });
       load();
-    } catch (e: any) { alert(e?.response?.data?.detail || "Error"); } finally { setGenerating(false); }
+    } catch (e: any) { alert(errorMessage(e, "Error")); } finally { setGenerating(false); }
   };
 
   const download = async (id: number, filename?: string) => {

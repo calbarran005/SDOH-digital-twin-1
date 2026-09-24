@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.models import domain  # Ensure all SQLAlchemy models are registered
 from app.models.geo import CensusTract, Hospital, HospitalCatchment
 from app.models.sdoh import EquityIndex, IndicatorCatalog, SDOHIndicator
+from app.services.summary_service import build_executive_summary
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -211,6 +212,31 @@ def generate_pdf(db: Session, rows, by_domain, hospital, catchment, title, year)
         spaceBefore=10,
         spaceAfter=8,
     )
+    body_style = ParagraphStyle(
+        "BodyText2",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9.5,
+        leading=13,
+        textColor=colors.HexColor("#1e293b"),
+        spaceAfter=6,
+    )
+    bullet_style = ParagraphStyle(
+        "BodyBullet",
+        parent=body_style,
+        leftIndent=14,
+        bulletIndent=4,
+        spaceAfter=3,
+    )
+    note_style = ParagraphStyle(
+        "DocNote",
+        parent=styles["Normal"],
+        fontName="Helvetica-Oblique",
+        fontSize=8,
+        leading=11,
+        textColor=colors.HexColor("#64748b"),
+        spaceBefore=6,
+    )
 
     story = []
     story.append(Paragraph(title, title_style))
@@ -225,7 +251,13 @@ def generate_pdf(db: Session, rows, by_domain, hospital, catchment, title, year)
     story.append(Spacer(1, 0.1 * inch))
 
     # Meta KPI Box
-    total_pop = sum(set(r["population"] for r in (rows or []) if r["population"]))
+    # Deduplicar por tract, no por valor de población: dos tracts con la misma
+    # población son dos tracts distintos.
+    total_pop = sum({
+        r["tract_geoid"]: r["population"]
+        for r in (rows or [])
+        if r.get("tract_geoid") and r.get("population")
+    }.values())
     unique_tracts = len(set(r["tract_geoid"] for r in (rows or [])))
     kpi_data = [
         ["Total Census Tracts", "Población Cobertura", "Indicadores Evaluados", "Dominios SDOH"],
@@ -251,6 +283,33 @@ def generate_pdf(db: Session, rows, by_domain, hospital, catchment, title, year)
     )
     story.append(kpi_tbl)
     story.append(Spacer(1, 0.2 * inch))
+
+    # Resumen ejecutivo redactado por el LLM (se omite si no está disponible)
+    resumen = build_executive_summary(db, rows, by_domain, hospital, catchment, year)
+    if resumen:
+        story.append(Paragraph("Resumen Ejecutivo", section_style))
+        story.append(Paragraph(resumen.panorama, body_style))
+
+        for heading, items in (
+            ("Hallazgos Principales", resumen.hallazgos),
+            ("Poblaciones Prioritarias", resumen.poblaciones_riesgo),
+            ("Recomendaciones", resumen.recomendaciones),
+        ):
+            if not items:
+                continue
+            story.append(Paragraph(f"<b>{heading}</b>", body_style))
+            for item in items:
+                story.append(Paragraph(item, bullet_style, bulletText="•"))
+
+        story.append(Paragraph(f"<b>Limitaciones:</b> {resumen.limitaciones}", note_style))
+        story.append(
+            Paragraph(
+                "Resumen generado automáticamente a partir de los agregados de este reporte; "
+                "requiere validación por personal de salud pública.",
+                note_style,
+            )
+        )
+        story.append(Spacer(1, 0.2 * inch))
 
     if by_domain:
         story.append(Paragraph("Resumen de Determinantes Sociales por Dominio", section_style))
@@ -304,8 +363,40 @@ def generate_word(db: Session, rows, by_domain, hospital, catchment, title, year
         f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
     )
 
+    # Resumen ejecutivo redactado por el LLM (se omite si no está disponible)
+    resumen = build_executive_summary(db, rows, by_domain, hospital, catchment, year)
+    if resumen:
+        doc.add_heading("1. Resumen Ejecutivo", level=1)
+        doc.add_paragraph(resumen.panorama)
+
+        for heading, items in (
+            ("Hallazgos Principales", resumen.hallazgos),
+            ("Poblaciones Prioritarias", resumen.poblaciones_riesgo),
+            ("Recomendaciones", resumen.recomendaciones),
+        ):
+            if not items:
+                continue
+            doc.add_heading(heading, level=2)
+            for item in items:
+                doc.add_paragraph(item, style="List Bullet")
+
+        nota = doc.add_paragraph()
+        run = nota.add_run(f"Limitaciones: {resumen.limitaciones}")
+        run.italic = True
+        run.font.size = Pt(8.5)
+        run.font.color.rgb = RGBColor(100, 116, 139)
+
+        aviso = doc.add_paragraph()
+        run = aviso.add_run(
+            "Resumen generado automáticamente a partir de los agregados de este reporte; "
+            "requiere validación por personal de salud pública."
+        )
+        run.italic = True
+        run.font.size = Pt(8.5)
+        run.font.color.rgb = RGBColor(100, 116, 139)
+
     if by_domain:
-        doc.add_heading("1. Resumen por Dominio de Determinantes Sociales", level=1)
+        doc.add_heading("2. Resumen por Dominio de Determinantes Sociales", level=1)
         table = doc.add_table(rows=1, cols=4)
         table.style = "Medium Shading 1 Accent 1"
         hdr = table.rows[0].cells
@@ -326,7 +417,7 @@ def generate_word(db: Session, rows, by_domain, hospital, catchment, title, year
         doc.add_picture(chart_path, width=Inches(6.2))
 
     if rows:
-        doc.add_heading("2. Detalle de Muestras por Census Tract", level=1)
+        doc.add_heading("3. Detalle de Muestras por Census Tract", level=1)
         d_table = doc.add_table(rows=1, cols=6)
         d_table.style = "Light Shading Accent 1"
         d_hdr = d_table.rows[0].cells

@@ -24,6 +24,7 @@ import {
   XCircle,
 } from "lucide-react";
 import api from "../api/client";
+import { errorMessage } from "../api/errors";
 import StatCard from "../components/StatCard";
 import type { CrispPhase, CrispPhaseOverview } from "../types";
 
@@ -111,7 +112,7 @@ export default function CrispDm() {
       ? "" : `?year=${year}`;
     api.get(`${meta.endpoint}${q}`)
       .then((r) => setData(r.data))
-      .catch((e) => setError(e?.response?.data?.detail || t("crispdm.loadError")))
+      .catch((e) => setError(errorMessage(e, t("crispdm.loadError"))))
       .finally(() => setLoading(false));
   }, [meta, activeKey, year, t]);
 
@@ -125,7 +126,7 @@ export default function CrispDm() {
       loadOverview();
       loadPhase();
     } catch (e: any) {
-      setError(e?.response?.data?.detail || t("crispdm.runError"));
+      setError(errorMessage(e, t("crispdm.runError")));
     } finally {
       setRunning(false);
     }
@@ -138,7 +139,7 @@ export default function CrispDm() {
       const r = await api.post(`/crispdm/evaluation/run${year === "" ? "" : `?year=${year}`}`);
       setData({ ...r.data, __benchmark: true });
     } catch (e: any) {
-      setError(e?.response?.data?.detail || t("crispdm.runError"));
+      setError(errorMessage(e, t("crispdm.runError")));
     } finally {
       setRunning(false);
     }

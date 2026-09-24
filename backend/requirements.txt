@@ -13,6 +13,8 @@ shapely==2.0.4
 geojson==3.1.0
 requests==2.32.3
 openai>=1.30.0
+langchain>=0.3.0
+langchain-openai>=0.2.0
 pandas==2.2.2
 numpy==1.26.4
 reportlab==4.2.2

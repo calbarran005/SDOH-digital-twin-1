@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShieldCheck, UserPlus, Shield, User as UserIcon, X } from "lucide-react";
 import api from "../api/client";
+import { errorMessage } from "../api/errors";
 import type { Role, User } from "../types";
 
 export default function Users() {
@@ -25,18 +26,22 @@ export default function Users() {
 
   const create = async () => {
     if (!username || !email || !password) { setError("Username, email y contraseña son requeridos"); return; }
+    // Mismas reglas que UserCreate en el backend: evita un 422 que el usuario no espera
+    if (username.length < 3) { setError("El username debe tener al menos 3 caracteres"); return; }
+    if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setError("El email no tiene un formato válido"); return; }
     setError(""); setSaving(true);
     try {
       await api.post("/users", { username, email, password, full_name: fullName, role_codes: roleCodes });
       setShowForm(false); setUsername(""); setEmail(""); setPassword(""); setFullName(""); setRoleCodes([]); load();
-    } catch (e: any) { setError(e?.response?.data?.detail || "Error"); } finally { setSaving(false); }
+    } catch (e: any) { setError(errorMessage(e, "Error")); } finally { setSaving(false); }
   };
 
   const toggleRole = (code: string) => { setRoleCodes((prev) => prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]); };
 
   const deleteUser = async (id: number, uname: string) => {
     if (!confirm(`Eliminar usuario "${uname}"?`)) return;
-    try { await api.delete(`/users/${id}`); load(); } catch (e: any) { alert(e?.response?.data?.detail || "Error"); }
+    try { await api.delete(`/users/${id}`); load(); } catch (e: any) { alert(errorMessage(e, "Error")); }
   };
 
   return (

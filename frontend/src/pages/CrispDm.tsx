@@ -27,6 +27,7 @@ import {
 import api from "../api/client";
 import { errorMessage } from "../api/errors";
 import StatCard from "../components/StatCard";
+import FigureExport from "../components/FigureExport";
 import MlEvaluation from "../components/MlEvaluation";
 import type { CrispPhase, CrispPhaseOverview } from "../types";
 
@@ -797,19 +798,21 @@ export default function CrispDm() {
 
           {phaseData.risk_distribution && Object.keys(phaseData.risk_distribution).length > 0 && (
             <Section title={t("crispdm.riskDistribution")}>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={Object.entries(phaseData.risk_distribution).map(([k, v]) => ({ name: k, count: v as number }))} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="name" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 8 }} />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                    {Object.keys(phaseData.risk_distribution).map((k) => (
-                      <Cell key={k} fill={RISK_COLORS[k] ?? "#64748b"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <FigureExport filename="crispdm-distribucion-riesgo">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={Object.entries(phaseData.risk_distribution).map(([k, v]) => ({ name: k, count: v as number }))} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis dataKey="name" stroke="#64748b" />
+                    <YAxis stroke="#64748b" />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 8 }} />
+                    <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                      {Object.keys(phaseData.risk_distribution).map((k) => (
+                        <Cell key={k} fill={RISK_COLORS[k] ?? "#64748b"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </FigureExport>
             </Section>
           )}
 

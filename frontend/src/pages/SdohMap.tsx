@@ -10,6 +10,7 @@ import {
 import { Database, Layers, Sparkles, Map as MapIcon, BarChart2 } from "lucide-react";
 import api from "../api/client";
 import StatCard from "../components/StatCard";
+import FigureExport from "../components/FigureExport";
 import SatelliteMap from "../components/SatelliteMap";
 import type { Hospital, Catchment, EquityIndex } from "../types";
 
@@ -189,17 +190,19 @@ export default function SdohMap() {
         <div className="grid grid-3" style={{ marginBottom: 20 }}>
           <div className="chart-card">
             <h3>{t("sdohMap.pieChart")}</h3>
-            <ResponsiveContainer width="100%" height={290}>
-              <PieChart>
-                <Pie data={domains} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                  {domains.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "8px" }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <FigureExport filename="sdoh-distribucion-dominio">
+              <ResponsiveContainer width="100%" height={290}>
+                <PieChart>
+                  <Pie data={domains} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                    {domains.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "8px" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </FigureExport>
           </div>
 
           <div className="chart-card" style={{ gridColumn: "span 2" }}>

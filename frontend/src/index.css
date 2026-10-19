@@ -391,6 +391,59 @@ button.nav-item svg {
   align-items: center;
 }
 
+/* ── Exportación de figuras (descarga en alta calidad) ── */
+.figure-export {
+  position: relative;
+}
+.figure-export-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+  z-index: 6;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+.figure-export:hover .figure-export-actions,
+.figure-export:focus-within .figure-export-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.figure-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary, #cbd5e1);
+  background: var(--bg-surface-elevated, rgba(22, 34, 61, 0.9));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.figure-export-btn:hover {
+  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.figure-export-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.figure-export-error {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 10.5px;
+  color: #f87171;
+}
+
 /* Mobile Header & Elements */
 .mobile-header {
   display: none;

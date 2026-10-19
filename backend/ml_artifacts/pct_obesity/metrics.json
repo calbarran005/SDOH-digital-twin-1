@@ -121,7 +121,7 @@
     },
     "clf_vs_reg_level_agreement": 0.8807
   },
-  "trained_at": "2026-09-28T21:39:56Z",
+  "trained_at": "2026-10-19T14:57:22Z",
   "source": "CDC PLACES (cwsq-ngmh) · valores por census tract cargados por el ETL",
   "year": 2023,
   "study_area": {
@@ -271,7 +271,7 @@
           82
         ]
       ],
-      "train_seconds": 2.01,
+      "train_seconds": 2.65,
       "selected": true
     },
     {
@@ -313,7 +313,7 @@
           82
         ]
       ],
-      "train_seconds": 13.0,
+      "train_seconds": 51.27,
       "selected": false
     },
     {
@@ -355,7 +355,7 @@
           82
         ]
       ],
-      "train_seconds": 13.86,
+      "train_seconds": 17.07,
       "selected": false
     },
     {
@@ -400,7 +400,7 @@
           81
         ]
       ],
-      "train_seconds": 2.55,
+      "train_seconds": 2.96,
       "selected": false
     }
   ],
@@ -471,5 +471,5 @@
       "importance": 0.0693
     }
   ],
-  "total_seconds": 32.15
+  "total_seconds": 74.52
 }

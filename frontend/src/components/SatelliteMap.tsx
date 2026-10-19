@@ -11,7 +11,8 @@ import {
   Eye, 
   Activity, 
   Crosshair,
-  TrendingDown
+  TrendingDown,
+  Download
 } from "lucide-react";
 import { loadLeaflet } from "../utils/leafletLoader";
 import api from "../api/client";
@@ -100,6 +101,7 @@ export default function SatelliteMap({
   const [geoData, setGeoData] = useState<any>(null);
   const [sondaTarget, setSondaTarget] = useState<SondaTarget | null>(null);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [exporting, setExporting] = useState<boolean>(false);
 
   // Current hospital object
   const currentHospital = useMemo(() => {
@@ -190,6 +192,7 @@ export default function SatelliteMap({
         const baseTile = L.tileLayer(baseLayerConfig.url, {
           maxZoom: baseLayerConfig.maxZoom,
           subdomains: ["a", "b", "c", "d"],
+          crossOrigin: "anonymous",
         }).addTo(map);
         baseTileLayerRef.current = baseTile;
 
@@ -234,6 +237,7 @@ export default function SatelliteMap({
     const newBase = L.tileLayer(cfg.url, {
       maxZoom: cfg.maxZoom,
       subdomains: ["a", "b", "c", "d"],
+      crossOrigin: "anonymous",
     }).addTo(map);
     baseTileLayerRef.current = newBase;
 
@@ -241,6 +245,7 @@ export default function SatelliteMap({
       const refLayer = L.tileLayer(cfg.referenceUrl, {
         maxZoom: cfg.maxZoom,
         pane: "overlayPane",
+        crossOrigin: "anonymous",
       }).addTo(map);
       refTileLayerRef.current = refLayer;
     }
@@ -488,6 +493,119 @@ export default function SatelliteMap({
     map.flyTo([currentHospital.latitude, currentHospital.longitude], 13.5, { duration: 1.0 });
   };
 
+  // Export the current map view (tiles + overlays + markers) at high resolution
+  const exportMapPng = async () => {
+    const map = mapInstanceRef.current as any;
+    const container = mapContainerRef.current;
+    if (!map || !container) return;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (!width || !height) return;
+    setExporting(true);
+    try {
+      const scale = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.scale(scale, scale);
+
+      const bg = getComputedStyle(container).backgroundColor;
+      ctx.fillStyle = bg && bg !== "rgba(0, 0, 0, 0)" ? bg : "#0b1220";
+      ctx.fillRect(0, 0, width, height);
+
+      const mapRect = container.getBoundingClientRect();
+
+      // 1. Base + reference raster tiles
+      container
+        .querySelectorAll<HTMLImageElement>(".leaflet-tile-pane img")
+        .forEach((img) => {
+          if (!img.complete || img.naturalWidth === 0) return;
+          const r = img.getBoundingClientRect();
+          if (!r.width || !r.height) return;
+          try {
+            ctx.drawImage(img, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+          } catch {
+            /* tile sin CORS: se omite */
+          }
+        });
+
+      // 2. Vector overlay (catchment polygons / radius) rendered by Leaflet as SVG
+      const overlay = container.querySelector<SVGSVGElement>(".leaflet-overlay-pane svg");
+      if (overlay) {
+        const r = overlay.getBoundingClientRect();
+        const markup = new XMLSerializer().serializeToString(overlay);
+        const url = URL.createObjectURL(
+          new Blob([markup], { type: "image/svg+xml;charset=utf-8" })
+        );
+        const img = await new Promise<HTMLImageElement | null>((resolve) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = () => resolve(null);
+          el.src = url;
+        });
+        if (img) {
+          ctx.drawImage(img, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+        }
+        URL.revokeObjectURL(url);
+      }
+
+      // 3. Hospital markers
+      hospitals.forEach((h) => {
+        if (h.latitude == null || h.longitude == null) return;
+        const p = map.latLngToContainerPoint([h.latitude, h.longitude]);
+        const selected = h.id === currentHospital?.id;
+        const radius = selected ? 10 : 7.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius + 5, 0, Math.PI * 2);
+        ctx.fillStyle = selected ? "rgba(6,182,212,0.28)" : "rgba(51,65,85,0.22)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = selected ? "#06b6d4" : "#334155";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = selected ? "#67e8f9" : "#0f172a";
+        ctx.stroke();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(p.x - 4, p.y);
+        ctx.lineTo(p.x + 4, p.y);
+        ctx.moveTo(p.x, p.y - 4);
+        ctx.lineTo(p.x, p.y + 4);
+        ctx.stroke();
+      });
+
+      // 4. Attribution
+      ctx.font = "10px 'JetBrains Mono', monospace";
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(255,255,255,0.82)";
+      ctx.fillText(BASE_LAYERS[activeBaseLayer].subtext, width - 10, height - 10);
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const slug = (currentHospital?.name || "gis")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        link.download = `mapa-satelital-${slug || "gis"}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }, "image/png");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="sat-console">
       {/* 1. Header Card with Layer Selection (Exactly as in user's reference) */}
@@ -633,9 +751,22 @@ export default function SatelliteMap({
               <span style={{ color: "#64748b", fontSize: 11 }}>• {selectedRadiusKm} km catchment</span>
             </div>
 
-            <div className="sat-live-indicator">
-              <span className="sat-live-dot"></span>
-              SENSOR EN TIEMPO REAL ACTIVO
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                className="sat-pill"
+                style={{ padding: "4px 12px", fontSize: 11.5 }}
+                onClick={exportMapPng}
+                disabled={exporting}
+                title="Descargar mapa en alta resolución (PNG)"
+              >
+                <Download size={13} />
+                {exporting ? "Exportando…" : "Descargar PNG"}
+              </button>
+              <div className="sat-live-indicator">
+                <span className="sat-live-dot"></span>
+                SENSOR EN TIEMPO REAL ACTIVO
+              </div>
             </div>
           </div>
 

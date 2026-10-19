@@ -25,6 +25,7 @@ import {
   LineChart as LineChartIcon,
   XCircle,
 } from "lucide-react";
+import FigureExport from "./FigureExport";
 import StatCard from "./StatCard";
 
 const AXIS = { stroke: "#64748b", fontSize: 11 };
@@ -186,17 +187,19 @@ export default function MlEvaluation({ data }: { data: any }) {
           {paired.applicable && (
             <>
               <h4 className="ml-eval-subtitle">{t("crispdm.mlEval.paired")}</h4>
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={(paired.winner_scores ?? []).map((w: number, i: number) => ({ fold: i + 1, winner: w, runner: paired.runner_scores?.[i] }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                  <XAxis dataKey="fold" {...AXIS} />
-                  <YAxis domain={[0.6, 1]} {...AXIS} />
-                  <Tooltip {...TOOLTIP} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="winner" name={sel.deployed} fill="#fbbf24" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="runner" name={t("crispdm.mlEval.runner")} fill="#475569" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <FigureExport filename="mleval-pliegues-pareados">
+                <ResponsiveContainer width="100%" height={230}>
+                  <BarChart data={(paired.winner_scores ?? []).map((w: number, i: number) => ({ fold: i + 1, winner: w, runner: paired.runner_scores?.[i] }))}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                    <XAxis dataKey="fold" {...AXIS} />
+                    <YAxis domain={[0.6, 1]} {...AXIS} />
+                    <Tooltip {...TOOLTIP} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="winner" name={sel.deployed} fill="#fbbf24" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="runner" name={t("crispdm.mlEval.runner")} fill="#475569" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </FigureExport>
               <p className="ml-eval-note">
                 {t("crispdm.mlEval.meanDiff")} <b>{sign(paired.mean_diff)}</b> ·{" "}
                 {t("crispdm.mlEval.wilcoxon")} W = {num(paired.wilcoxon_stat, 1)}, p = {num(paired.p_value)} ·{" "}
@@ -224,24 +227,26 @@ export default function MlEvaluation({ data }: { data: any }) {
           <div className="grid grid-2" style={{ marginBottom: 18 }}>
             <div>
               <h4 className="ml-eval-subtitle">{t("crispdm.mlEval.parityPlot")}</h4>
-              <ResponsiveContainer width="100%" height={280}>
-                <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                  <XAxis type="number" dataKey="x" name={t("crispdm.mlEval.observed")} {...AXIS} />
-                  <YAxis type="number" dataKey="y" name={t("crispdm.mlEval.predicted")} {...AXIS} />
-                  <ZAxis range={[26, 26]} />
-                  <Tooltip {...TOOLTIP} cursor={{ strokeDasharray: "3 3" }} />
-                  <ReferenceLine
-                    segment={[
-                      { x: par.obs_min ?? 0, y: par.obs_min ?? 0 },
-                      { x: par.obs_max ?? 100, y: par.obs_max ?? 100 },
-                    ]}
-                    stroke="#475569"
-                    strokeDasharray="4 4"
-                  />
-                  <Scatter data={par.parity_points ?? []} fill="#3b82f6" fillOpacity={0.55} />
-                </ScatterChart>
-              </ResponsiveContainer>
+              <FigureExport filename="mleval-paridad">
+                <ResponsiveContainer width="100%" height={280}>
+                  <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                    <XAxis type="number" dataKey="x" name={t("crispdm.mlEval.observed")} {...AXIS} />
+                    <YAxis type="number" dataKey="y" name={t("crispdm.mlEval.predicted")} {...AXIS} />
+                    <ZAxis range={[26, 26]} />
+                    <Tooltip {...TOOLTIP} cursor={{ strokeDasharray: "3 3" }} />
+                    <ReferenceLine
+                      segment={[
+                        { x: par.obs_min ?? 0, y: par.obs_min ?? 0 },
+                        { x: par.obs_max ?? 100, y: par.obs_max ?? 100 },
+                      ]}
+                      stroke="#475569"
+                      strokeDasharray="4 4"
+                    />
+                    <Scatter data={par.parity_points ?? []} fill="#3b82f6" fillOpacity={0.55} />
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </FigureExport>
               <p className="ml-eval-note">
                 {t("crispdm.mlEval.fit")} y = {num(par.fit_line?.slope, 3)} x {par.fit_line?.intercept >= 0 ? "+" : "−"} {num(Math.abs(par.fit_line?.intercept ?? 0), 3)} ·{" "}
                 {t("crispdm.mlEval.interceptP")} p = {num(par.fit_line?.p_value)} ·{" "}
@@ -251,15 +256,17 @@ export default function MlEvaluation({ data }: { data: any }) {
 
             <div>
               <h4 className="ml-eval-subtitle">{t("crispdm.mlEval.residualHist")}</h4>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={((par.residual_hist?.counts ?? []) as number[]).map((c, i) => ({ bin: i, count: c }))} margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                  <XAxis dataKey="bin" {...AXIS} />
-                  <YAxis {...AXIS} />
-                  <Tooltip {...TOOLTIP} />
-                  <Bar dataKey="count" fill="#64748b" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <FigureExport filename="mleval-histograma-residuos">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={((par.residual_hist?.counts ?? []) as number[]).map((c, i) => ({ bin: i, count: c }))} margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                    <XAxis dataKey="bin" {...AXIS} />
+                    <YAxis {...AXIS} />
+                    <Tooltip {...TOOLTIP} />
+                    <Bar dataKey="count" fill="#64748b" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </FigureExport>
               <p className="ml-eval-note">
                 {par.normality?.test} p = {num(par.normality?.p_value)} ·{" "}
                 {par.normality?.normal_at_05 ? t("crispdm.mlEval.notRejected") : t("crispdm.mlEval.rejected")} ·{" "}
@@ -274,17 +281,19 @@ export default function MlEvaluation({ data }: { data: any }) {
           </div>
 
           <h4 className="ml-eval-subtitle">{t("crispdm.mlEval.residualVsFitted")}</h4>
-          <ResponsiveContainer width="100%" height={220}>
-            <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-              <XAxis type="number" dataKey="x" name={t("crispdm.mlEval.fitted")} {...AXIS} />
-              <YAxis type="number" dataKey="y" name={t("crispdm.mlEval.residual")} {...AXIS} />
-              <ZAxis range={[22, 22]} />
-              <Tooltip {...TOOLTIP} cursor={{ strokeDasharray: "3 3" }} />
-              <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" />
-              <Scatter data={par.residual_vs_fitted ?? []} fill="#a78bfa" fillOpacity={0.5} />
-            </ScatterChart>
-          </ResponsiveContainer>
+          <FigureExport filename="mleval-residuo-vs-ajuste">
+            <ResponsiveContainer width="100%" height={220}>
+              <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                <XAxis type="number" dataKey="x" name={t("crispdm.mlEval.fitted")} {...AXIS} />
+                <YAxis type="number" dataKey="y" name={t("crispdm.mlEval.residual")} {...AXIS} />
+                <ZAxis range={[22, 22]} />
+                <Tooltip {...TOOLTIP} cursor={{ strokeDasharray: "3 3" }} />
+                <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" />
+                <Scatter data={par.residual_vs_fitted ?? []} fill="#a78bfa" fillOpacity={0.5} />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </FigureExport>
         </div>
       )}
 
@@ -334,19 +343,21 @@ export default function MlEvaluation({ data }: { data: any }) {
           <div className="grid grid-2">
             <div>
               <h4 className="ml-eval-subtitle">{t("crispdm.mlEval.uniqueShare")}</h4>
-              <ResponsiveContainer width="100%" height={Math.max(240, (sob.variables?.length ?? 6) * 26)}>
-                <BarChart data={[...(sob.variables ?? [])].sort((a: any, b: any) => b.unique - a.unique)} margin={{ top: 8, right: 12, bottom: 4, left: -18 }} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                  <XAxis type="number" domain={[0, Math.max(0.05, ...(sob.variables ?? []).map((v: any) => v.unique ?? 0))]} {...AXIS} />
-                  <YAxis type="category" dataKey="name" width={150} {...AXIS} />
-                  <Tooltip {...TOOLTIP} />
-                  <Bar dataKey="unique" radius={[0, 4, 4, 0]}>
-                    {[...(sob.variables ?? [])].sort((a: any, b: any) => b.unique - a.unique).map((v: any) => (
-                      <Cell key={v.code} fill={v.unique > 0.1 ? "#a78bfa" : v.unique > 0.02 ? "#818cf8" : "#475569"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <FigureExport filename="mleval-sobol-contribucion-unica">
+                <ResponsiveContainer width="100%" height={Math.max(240, (sob.variables?.length ?? 6) * 26)}>
+                  <BarChart data={[...(sob.variables ?? [])].sort((a: any, b: any) => b.unique - a.unique)} margin={{ top: 8, right: 12, bottom: 4, left: -18 }} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                    <XAxis type="number" domain={[0, Math.max(0.05, ...(sob.variables ?? []).map((v: any) => v.unique ?? 0))]} {...AXIS} />
+                    <YAxis type="category" dataKey="name" width={150} {...AXIS} />
+                    <Tooltip {...TOOLTIP} />
+                    <Bar dataKey="unique" radius={[0, 4, 4, 0]}>
+                      {[...(sob.variables ?? [])].sort((a: any, b: any) => b.unique - a.unique).map((v: any) => (
+                        <Cell key={v.code} fill={v.unique > 0.1 ? "#a78bfa" : v.unique > 0.02 ? "#818cf8" : "#475569"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </FigureExport>
             </div>
 
             <div>

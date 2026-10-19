@@ -13,6 +13,7 @@ import {
 import { Calculator, Scale, Sparkles } from "lucide-react";
 import api from "../api/client";
 import StatCard from "../components/StatCard";
+import FigureExport from "../components/FigureExport";
 import type { EquityIndex } from "../types";
 
 export default function Equity() {
@@ -87,17 +88,19 @@ export default function Equity() {
       <div className="grid grid-2" style={{ marginBottom: 22 }}>
         <div className="chart-card">
           <h3>{t("equity.riskDistribution")}</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={byRisk} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "8px" }} />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} name="Tracts">
-                {byRisk.map((r) => <Cell key={r.name} fill={r.fill} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <FigureExport filename="equidad-distribucion-riesgo">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={byRisk} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="name" stroke="#64748b" />
+                <YAxis stroke="#64748b" />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={{ background: "var(--bg-surface)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "8px" }} />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} name="Tracts">
+                  {byRisk.map((r) => <Cell key={r.name} fill={r.fill} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </FigureExport>
         </div>
 
         <div className="chart-card">

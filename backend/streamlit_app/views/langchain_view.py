@@ -1,5 +1,6 @@
 import streamlit as st
 
+import ui
 from engine import llm
 
 st.title("🦜 Asistente LangChain")
@@ -42,8 +43,12 @@ with tab_item:
     sel = st.selectbox("Resultado", items, format_func=lambda i: f"{i.section.split(' ')[0]} · {i.title}")
     if sel.png:
         st.image(sel.png, width="stretch")
+        ui.download_figure(sel, f"lc_{sel.key}")
     if sel.table is not None:
         st.dataframe(sel.table, width="stretch", hide_index=True)
+        st.download_button("⬇️ CSV · datos de la tabla", sel.table.to_csv(index=False).encode("utf-8"),
+                           file_name=f"{ui.slugify(sel.title)}.csv", mime="text/csv",
+                           key=f"dl_csv_lc_{sel.key}")
     st.success(f"**🔎 Interpretación calculada**\n\n{sel.interpretation}")
     if st.button("✨ Interpretar con LangChain", type="primary"):
         with st.spinner("Generando…"):

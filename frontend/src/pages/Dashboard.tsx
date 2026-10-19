@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import api from "../api/client";
 import StatCard from "../components/StatCard";
+import FigureExport from "../components/FigureExport";
 import Twin3D, { TwinCell, TwinHospital } from "../components/Twin3D";
 import type { Alert, EquityIndex, Hospital } from "../types";
 
@@ -354,27 +355,29 @@ export default function Dashboard() {
               {hospital ? hospital.name : t("dashboard.allHospitals")} · {YEAR}
             </span>
           </h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={riskCounts} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
-              <Tooltip
-                cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                contentStyle={{
-                  background: "var(--bg-surface)",
-                  border: "1px solid rgba(59,130,246,0.3)",
-                  borderRadius: "8px",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-                }}
-              />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} name={t("dashboard.censusTractsLabel")}>
-                {riskCounts.map((entry) => (
-                  <RechartsCell key={entry.key} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <FigureExport filename="dashboard-distribucion-riesgo">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={riskCounts} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                  contentStyle={{
+                    background: "var(--bg-surface)",
+                    border: "1px solid rgba(59,130,246,0.3)",
+                    borderRadius: "8px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                  }}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} name={t("dashboard.censusTractsLabel")}>
+                  {riskCounts.map((entry) => (
+                    <RechartsCell key={entry.key} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </FigureExport>
         </div>
 
         <div className="chart-card">

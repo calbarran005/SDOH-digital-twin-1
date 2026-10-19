@@ -10,7 +10,7 @@ import streamlit as st
 
 from engine import llm
 from engine.report import SECTIONS, ReportItem
-from engine.style import plt, to_png
+from engine.style import hi_quality, plt, to_png
 
 REQUIRE_LOGIN = os.getenv("STREAMLIT_REQUIRE_LOGIN", "true").lower() in ("1", "true", "yes")
 
@@ -91,6 +91,30 @@ def reset_from(section: str) -> None:
 # --------------------------------------------------------------------------- #
 
 
+def slugify(text: str) -> str:
+    keep = "".join(c.lower() if c.isalnum() else "-" for c in text)
+    while "--" in keep:
+        keep = keep.replace("--", "-")
+    return keep.strip("-") or "figura"
+
+
+def download_figure(item: ReportItem, key: str) -> None:
+    """Botones para bajar la figura en máxima calidad (PNG 300 dpi + SVG/PDF vectorial)."""
+    options = [
+        ("⬇️ PNG · 300 dpi", item.png_hires, "png", "image/png"),
+        ("⬇️ SVG · vectorial", item.svg, "svg", "image/svg+xml"),
+        ("⬇️ PDF · vectorial", item.pdf, "pdf", "application/pdf"),
+    ]
+    options = [o for o in options if o[1]]
+    if not options:
+        return
+    slug = slugify(item.title)
+    cols = st.columns(len(options))
+    for col, (label, data, ext, mime) in zip(cols, options):
+        col.download_button(label, data, file_name=f"{slug}.{ext}", mime=mime,
+                            key=f"dl_{ext}_{key}")
+
+
 def render(
     key: str,
     section: str,
@@ -102,21 +126,29 @@ def render(
     order: int = 0,
     show_table: bool = True,
 ) -> ReportItem:
-    png = None
+    prev: Optional[ReportItem] = st.session_state.report.get(key)
+    png = hires = svg = pdf = None
     if fig is not None:
         png = to_png(fig)
+        if prev is not None and prev.png == png and prev.png_hires is not None:
+            hires, svg, pdf = prev.png_hires, prev.svg, prev.pdf
+        else:
+            q = hi_quality(fig)
+            hires, svg, pdf = q["png"], q["svg"], q["pdf"]
         plt.close(fig)
-    prev: Optional[ReportItem] = st.session_state.report.get(key)
     item = ReportItem(key=key, section=section, title=title, how=how, interpretation=interpretation,
-                      png=png, table=table, order=order,
+                      png=png, png_hires=hires, svg=svg, pdf=pdf, table=table, order=order,
                       llm_text=prev.llm_text if prev and prev.interpretation == interpretation else None)
     st.session_state.report[key] = item
 
     st.markdown(f"#### {title}")
     if png:
         st.image(png, width="stretch")
+        download_figure(item, key)
     if table is not None and show_table:
         st.dataframe(table, width="stretch", hide_index=True)
+        st.download_button("⬇️ CSV · datos de la tabla", table.to_csv(index=False).encode("utf-8"),
+                           file_name=f"{slugify(title)}.csv", mime="text/csv", key=f"dl_csv_{key}")
     c1, c2 = st.columns(2)
     c1.info(f"**📖 Cómo se lee (explicabilidad)**\n\n{how}")
     c2.success(f"**🔎 Interpretación**\n\n{interpretation}")

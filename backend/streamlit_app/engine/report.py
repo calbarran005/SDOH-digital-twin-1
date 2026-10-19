@@ -45,6 +45,9 @@ class ReportItem:
     how: str
     interpretation: str
     png: Optional[bytes] = None
+    png_hires: Optional[bytes] = None
+    svg: Optional[bytes] = None
+    pdf: Optional[bytes] = None
     table: Optional[pd.DataFrame] = None
     llm_text: Optional[str] = None
     order: int = 0

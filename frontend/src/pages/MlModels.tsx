@@ -13,6 +13,7 @@ import {
 import { Award, Cpu, Database, Gauge, PlayCircle, Target } from "lucide-react";
 import api from "../api/client";
 import { errorMessage } from "../api/errors";
+import FigureExport from "../components/FigureExport";
 import StatCard from "../components/StatCard";
 
 const RISK_LEVELS = ["low", "moderate", "high", "critical"] as const;
@@ -207,36 +208,42 @@ export default function MlModels() {
 
           <div className="grid grid-2">
             <Section title={t("ml.f1Chart")}>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={models.map((m) => ({ name: m.name, f1: m.cv_f1_mean, selected: m.selected }))} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 11 }} interval={0} />
-                  <YAxis stroke="#64748b" domain={[0, 1]} tick={{ fontSize: 11 }} />
-                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tooltipStyle} formatter={(v: number) => [num(v), "F1-macro CV"]} />
-                  <Bar dataKey="f1" radius={[4, 4, 0, 0]} maxBarSize={56}>
-                    {models.map((m) => (
-                      <Cell key={m.key} fill={m.selected ? ACCENT : MUTED_BAR} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <FigureExport filename="ml-comparacion-f1">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={models.map((m) => ({ name: m.name, f1: m.cv_f1_mean, selected: m.selected }))} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 11 }} interval={0} />
+                    <YAxis stroke="#64748b" domain={[0, 1]} tick={{ fontSize: 11 }} />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tooltipStyle} formatter={(v: number) => [num(v), "F1-macro CV"]} />
+                    <Bar dataKey="f1" radius={[4, 4, 0, 0]} maxBarSize={56}>
+                      {models.map((m) => (
+                        <Cell key={m.key} fill={m.selected ? ACCENT : MUTED_BAR} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </FigureExport>
             </Section>
 
             <Section title={`${t("ml.confusion")} · ${best.name}`}>
-              <ConfusionMatrix matrix={best.confusion_matrix} t={t} />
+              <FigureExport filename="ml-matriz-confusion">
+                <ConfusionMatrix matrix={best.confusion_matrix} t={t} />
+              </FigureExport>
             </Section>
           </div>
 
           <Section title={t("ml.importance")}>
-            <ResponsiveContainer width="100%" height={Math.max(220, (status.feature_importance?.length ?? 0) * 28)}>
-              <BarChart layout="vertical" data={status.feature_importance} margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
-                <XAxis type="number" stroke="#64748b" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" width={230} stroke="#64748b" tick={{ fontSize: 11 }} />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tooltipStyle} formatter={(v: number) => [num(v), t("ml.importanceUnit")]} />
-                <Bar dataKey="importance" fill="#60a5fa" radius={[0, 4, 4, 0]} maxBarSize={18} />
-              </BarChart>
-            </ResponsiveContainer>
+            <FigureExport filename="ml-importancia-variables">
+              <ResponsiveContainer width="100%" height={Math.max(220, (status.feature_importance?.length ?? 0) * 28)}>
+                <BarChart layout="vertical" data={status.feature_importance} margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                  <XAxis type="number" stroke="#64748b" tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="name" width={230} stroke="#64748b" tick={{ fontSize: 11 }} />
+                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={tooltipStyle} formatter={(v: number) => [num(v), t("ml.importanceUnit")]} />
+                  <Bar dataKey="importance" fill="#60a5fa" radius={[0, 4, 4, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </FigureExport>
             <p style={{ color: "var(--text-dim)", fontSize: 12.5, marginBottom: 0 }}>{t("ml.importanceHint")}</p>
           </Section>
 

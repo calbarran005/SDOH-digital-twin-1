@@ -5,6 +5,7 @@ import * as THREE from "three";
 import {
   Building2,
   Cross,
+  Download,
   Layers,
   Maximize2,
   Radio,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../store/theme";
+import { downloadCanvasAsPng } from "../utils/figureExport";
 
 export interface TwinCell {
   id: string;
@@ -693,6 +695,7 @@ export default function Twin3D({ cells, colorBy, onSelect, hospital, loading, hu
   const [showLabels, setShowLabels] = useState(false);
   const [isWireframe, setIsWireframe] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const glRef = useRef<HTMLCanvasElement | null>(null);
 
   const accent = useMemo(
     () => new THREE.Color(isLight ? "#2563eb" : "#60a5fa"),
@@ -754,14 +757,36 @@ export default function Twin3D({ cells, colorBy, onSelect, hospital, loading, hu
     setSelectedId(null);
   };
 
+  const downloadTwin = () => {
+    const canvas = glRef.current;
+    if (!canvas) return;
+    const slug = (hospital?.name ?? "gemelo-digital")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    requestAnimationFrame(() =>
+      downloadCanvasAsPng(canvas, `gemelo-digital-${slug || "3d"}`)
+    );
+  };
+
   return (
     <div className="twin-canvas-wrapper">
       <Canvas
         className="twin-canvas"
         shadows={shadows}
-        dpr={[1, 1.75]}
+        dpr={[1, 2]}
         camera={{ position: [20, 18, 20], fov: 42 }}
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: true,
+        }}
+        onCreated={({ gl }) => {
+          glRef.current = gl.domElement as HTMLCanvasElement;
+        }}
         onPointerMissed={() => setSelectedId(null)}
       >
         <color attach="background" args={[isLight ? "#cfdaea" : "#04070f"]} />
@@ -949,6 +974,15 @@ export default function Twin3D({ cells, colorBy, onSelect, hospital, loading, hu
           >
             <Maximize2 size={14} />
             <span>{t("dashboard.center")}</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm secondary"
+            title={t("common.downloadPngHq")}
+            onClick={downloadTwin}
+          >
+            <Download size={14} />
+            <span>PNG</span>
           </button>
         </div>
       </div>

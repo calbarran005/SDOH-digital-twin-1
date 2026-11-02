@@ -552,31 +552,37 @@ def _perm_pvalue_abs(
     seed: int = RANDOM_STATE,
     chunk: int = 200,
 ) -> float:
-    """p-valor de permutación para H0: |ρ(base)| ≥ |ρ(alt)|.
+    """p-valor bilateral de permutación pareada para H0: |ρ(alt, y)| = |ρ(base, y)|.
 
     Se compara la **magnitud** de la correlación, no su signo: el compuesto es un
-    índice protector (más alto = mejor situación social) y el resultado de salud es un
-    indicador de riesgo (más alto = peor), por lo que la correlación esperada es
-    negativa y un valor mayor significaría peor validez, no mejor.
+    índice protector y el resultado de salud es de riesgo, así que la correlación
+    esperada es negativa.
 
-    Se permutan los índices de forma conjunta, lo que preserva la correlación entre
-    ambos y respeta la hipótesis nula. Se procesa por bloques para no-materializar
-    todas las permutaciones a la vez.
+    Corrección (revisión por pares): la versión anterior permutaba ambas variantes a
+    la vez frente a ``y`` y nunca usaba la diferencia observada, por lo que devolvía
+    p ≈ 0,5 con cualquier dato. Ahora, bajo H0 las dos variantes son intercambiables
+    tract a tract: en cada réplica se intercambian al azar sus rangos tipificados y se
+    compara |Δρ| permutado con |Δρ| observado.
     """
     b = np.asarray(base, dtype=float)
     a = np.asarray(alt, dtype=float)
     y = np.asarray(outcome, dtype=float)
     n = a.size
+    zb = stats.zscore(stats.rankdata(b))
+    za = stats.zscore(stats.rankdata(a))
     ry = _rank_rows(y[None, :])[0]
+    obs = abs(_row_corr(za[None, :], ry[None, :])[0]) - abs(_row_corr(zb[None, :], ry[None, :])[0])
     ge = 0
     done = 0
     rng = np.random.default_rng(seed)
     while done < n_perm:
         k = min(chunk, n_perm - done)
-        idx = np.argsort(rng.random((k, n)), axis=1)
-        rb = np.abs(_row_corr(_rank_rows(np.take_along_axis(b[None, :].repeat(k, 0), idx, 1)), ry[None, :].repeat(k, 0)))
-        ra = np.abs(_row_corr(_rank_rows(np.take_along_axis(a[None, :].repeat(k, 0), idx, 1)), ry[None, :].repeat(k, 0)))
-        ge += int(np.nansum(rb >= ra))
+        swap = rng.random((k, n)) < 0.5
+        pa = np.where(swap, zb[None, :], za[None, :])
+        pb = np.where(swap, za[None, :], zb[None, :])
+        ryk = ry[None, :].repeat(k, 0)
+        d = np.abs(_row_corr(pa, ryk)) - np.abs(_row_corr(pb, ryk))
+        ge += int(np.nansum(np.abs(d) >= abs(obs)))
         done += k
     return (ge + 1) / (n_perm + 1)
 
@@ -738,7 +744,9 @@ def _h2_accessibility_validity(db, year: int, target: str) -> Dict[str, Any]:
             [base[i] + w_access * binary_n[i] for i in shared], dtype=float
         ),
         "decaimiento": np.asarray(
-            [base[i] + w_access * (1.0 - decay_n[i]) for i in shared], dtype=float
+            # Misma orientación protectora que la cobertura binaria (antes se sumaba
+            # 1 − acceso, lo que invertía el sentido del término de accesibilidad).
+            [base[i] + w_access * decay_n[i] for i in shared], dtype=float
         ),
     }
     n = len(shared)
@@ -749,7 +757,7 @@ def _h2_accessibility_validity(db, year: int, target: str) -> Dict[str, Any]:
     sweep_rows = []
     for r_km, d in access["sweep"].items():
         d_n = _norm(d, shared)
-        v = np.asarray([base[i] + w_access * (1.0 - d_n[i]) for i in shared], dtype=float)
+        v = np.asarray([base[i] + w_access * d_n[i] for i in shared], dtype=float)
         rho = abs(_spearman(v, y) or 0.0)
         p_r = _perm_pvalue_abs(variants["cobertura_binaria"], v, y)
         sweep_rows.append(

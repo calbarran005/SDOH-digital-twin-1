@@ -1,0 +1,1289 @@
+{
+ "meta": {
+  "seed": 42,
+  "python": "3.14.4"
+ },
+ "data": {
+  "tracts": 1632,
+  "cuts_train": [
+   24.2,
+   28.7,
+   36.0
+  ],
+  "n_train": 1305,
+  "n_test": 327,
+  "test_by_county": {
+   "Cook County": 265,
+   "New York County": 62
+  },
+  "sdoh_index_codes": [
+   "pct_no_health_insurance",
+   "pct_inactivity",
+   "pct_food_insecurity",
+   "pct_smoking",
+   "pct_short_sleep",
+   "pct_lack_social_support",
+   "pct_loneliness",
+   "pct_housing_insecurity",
+   "pct_utility_shutoff",
+   "pct_no_transportation",
+   "pct_food_stamps",
+   "pct_binge_drinking",
+   "pct_routine_checkup",
+   "pct_cholesterol_screening",
+   "pct_colorectal_screening",
+   "pct_dental_visit"
+  ]
+ },
+ "moran_obesity": {
+  "I": 0.887589755099992,
+  "z": 60.499292146891605,
+  "p": 0.001,
+  "E_I": -0.0006131207847946045
+ },
+ "moran_correlogram": [
+  {
+   "band_km": "0-1",
+   "I": 0.8906399952484145,
+   "tracts_with_neighbors": 1214
+  },
+  {
+   "band_km": "1-2",
+   "I": 0.836365778306426,
+   "tracts_with_neighbors": 1596
+  },
+  {
+   "band_km": "2-4",
+   "I": 0.7382062302659648,
+   "tracts_with_neighbors": 1630
+  },
+  {
+   "band_km": "4-8",
+   "I": 0.5832188266619003,
+   "tracts_with_neighbors": 1631
+  },
+  {
+   "band_km": "8-16",
+   "I": 0.3928962879064188,
+   "tracts_with_neighbors": 1632
+  },
+  {
+   "band_km": "16-32",
+   "I": 0.13985720534619975,
+   "tracts_with_neighbors": 1440
+  },
+  {
+   "band_km": "32-64",
+   "I": -0.1771879723854045,
+   "tracts_with_neighbors": 1328
+  }
+ ],
+ "moran_morbidity_composite": {
+  "I": 0.7226804967048206,
+  "z": 48.329254136522884,
+  "p": 0.001,
+  "E_I": -0.0006131207847946045
+ },
+ "R1_spatial_cv": {
+  "summary": [
+   {
+    "scheme": "Aleatoria",
+    "model": "Azar",
+    "mean": 0.27980011116413733,
+    "std": 0.015595223039509236,
+    "count": 25
+   },
+   {
+    "scheme": "Aleatoria",
+    "model": "GB",
+    "mean": 0.9156848502271113,
+    "std": 0.014904898369408346,
+    "count": 25
+   },
+   {
+    "scheme": "Aleatoria",
+    "model": "LR",
+    "mean": 0.9357328014448327,
+    "std": 0.01586811396898924,
+    "count": 25
+   },
+   {
+    "scheme": "Aleatoria",
+    "model": "MLP",
+    "mean": 0.8719663776241451,
+    "std": 0.05052573750766243,
+    "count": 25
+   },
+   {
+    "scheme": "Aleatoria",
+    "model": "RF",
+    "mean": 0.9068859686163985,
+    "std": 0.014372050404605166,
+    "count": 25
+   },
+   {
+    "scheme": "Bloques espaciales",
+    "model": "Azar",
+    "mean": 0.2280398878009152,
+    "std": 0.0334321675259389,
+    "count": 25
+   },
+   {
+    "scheme": "Bloques espaciales",
+    "model": "GB",
+    "mean": 0.8447308389966782,
+    "std": 0.09509659084084024,
+    "count": 25
+   },
+   {
+    "scheme": "Bloques espaciales",
+    "model": "LR",
+    "mean": 0.8968274963669671,
+    "std": 0.05445668679115839,
+    "count": 25
+   },
+   {
+    "scheme": "Bloques espaciales",
+    "model": "MLP",
+    "mean": 0.7780894937683932,
+    "std": 0.111809547925165,
+    "count": 25
+   },
+   {
+    "scheme": "Bloques espaciales",
+    "model": "RF",
+    "mean": 0.8321872491672323,
+    "std": 0.10346142501915714,
+    "count": 25
+   }
+  ],
+  "LR_random_minus_block": 0.038905305077865604,
+  "wilcoxon_random_vs_block": {
+   "W": 35.0,
+   "p": 0.0002498030662536621
+  },
+  "NB_LR_vs_GB_block": {
+   "delta": 0.05209665737028893,
+   "t": 1.2788549938642835,
+   "p": 0.21317613931138726
+  }
+ },
+ "R1_block_size": [
+  {
+   "blocks": 10,
+   "approx_block_side_km": 15.833508770957875,
+   "f1": 0.8787106058957345,
+   "sd": 0.056583460777479284
+  },
+  {
+   "blocks": 20,
+   "approx_block_side_km": 11.195981421920992,
+   "f1": 0.8968274963669671,
+   "sd": 0.05445668679115839
+  },
+  {
+   "blocks": 40,
+   "approx_block_side_km": 7.916754385478938,
+   "f1": 0.9186523143541576,
+   "sd": 0.026009746251885468
+  },
+  {
+   "blocks": 80,
+   "approx_block_side_km": 5.597990710960496,
+   "f1": 0.9247830379160414,
+   "sd": 0.02337611644108
+  }
+ ],
+ "R1_loco": [
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "LR",
+   "f1_cuts_train_county": 0.1978384124734231,
+   "kappa": 0.1046615954749367,
+   "test_class_dist": {
+    "low": 0.865,
+    "moderate": 0.102,
+    "high": 0.03,
+    "critical": 0.003
+   }
+  },
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "GB",
+   "f1_cuts_train_county": 0.22052243716278458,
+   "kappa": 0.15195274040039386,
+   "test_class_dist": {
+    "low": 0.865,
+    "moderate": 0.102,
+    "high": 0.03,
+    "critical": 0.003
+   }
+  },
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "RF",
+   "f1_cuts_train_county": 0.2206404622885692,
+   "kappa": 0.15839288249491268,
+   "test_class_dist": {
+    "low": 0.865,
+    "moderate": 0.102,
+    "high": 0.03,
+    "critical": 0.003
+   }
+  },
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "Azar",
+   "f1_cuts_train_county": 0.15151644474792308,
+   "kappa": -0.007999524191869556,
+   "test_class_dist": {
+    "low": 0.865,
+    "moderate": 0.102,
+    "high": 0.03,
+    "critical": 0.003
+   }
+  },
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "LR (cortes globales)",
+   "f1_global_cuts": 0.07511500547645127
+  },
+  {
+   "train": "Cook County",
+   "test": "New York County",
+   "model": "Ridge (continuo)",
+   "MAE": 13.461579961812976,
+   "R2": -5.418405881163039,
+   "rho": 0.9696416728979186,
+   "mean_bias": 13.461579961812976
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "LR",
+   "f1_cuts_train_county": 0.12050258219818996,
+   "kappa": -0.029085973407017685,
+   "test_class_dist": {
+    "critical": 0.917,
+    "high": 0.082,
+    "moderate": 0.001
+   }
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "GB",
+   "f1_cuts_train_county": 0.1592709808454718,
+   "kappa": 0.00921268308647527,
+   "test_class_dist": {
+    "critical": 0.917,
+    "high": 0.082,
+    "moderate": 0.001
+   }
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "RF",
+   "f1_cuts_train_county": 0.1597253389434315,
+   "kappa": 0.010792476102374327,
+   "test_class_dist": {
+    "critical": 0.917,
+    "high": 0.082,
+    "moderate": 0.001
+   }
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "Azar",
+   "f1_cuts_train_county": 0.13267428819507254,
+   "kappa": -0.0016394655095903765,
+   "test_class_dist": {
+    "critical": 0.917,
+    "high": 0.082,
+    "moderate": 0.001
+   }
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "LR (cortes globales)",
+   "f1_global_cuts": 0.07678571428571429
+  },
+  {
+   "train": "New York County",
+   "test": "Cook County",
+   "model": "Ridge (continuo)",
+   "MAE": 11.71358788365765,
+   "R2": -1.4251192213648674,
+   "rho": 0.9946914483998403,
+   "mean_bias": -11.71358788365765
+  }
+ ],
+ "R1_test_by_county": [
+  {
+   "county": "Cook County",
+   "n": 265,
+   "f1_macro": 0.9264771651027516,
+   "accuracy": 0.9358490566037736,
+   "class_dist": {
+    "critical": 82,
+    "high": 79,
+    "moderate": 73,
+    "low": 31
+   }
+  },
+  {
+   "county": "New York County",
+   "n": 62,
+   "f1_macro": 0.8493582691602493,
+   "accuracy": 0.9354838709677419,
+   "class_dist": {
+    "low": 51,
+    "moderate": 9,
+    "high": 2
+   }
+  }
+ ],
+ "R1_moran_residuals": {
+  "ridge_residual": {
+   "I": 0.49386279252754894,
+   "z": 32.90046779638193,
+   "p": 0.001,
+   "E_I": -0.0006131207847946045
+  },
+  "ordinal_error_LR": {
+   "I": 0.04653536960879549,
+   "z": 3.2071089448071906,
+   "p": 0.004,
+   "E_I": -0.0006131207847946045
+  }
+ },
+ "R2_moe": {
+  "B": 200,
+  "scenarios": {
+   "Solo entradas (X)": {
+    "f1_mean": 0.7912133566184124,
+    "f1_ci": [
+     0.7578778912986073,
+     0.8292143187337072
+    ],
+    "label_agreement": 1.0,
+    "pred_agreement": 0.6934803921568627,
+    "share_pred_stable_95": 0.17769607843137256,
+    "share_label_stable_95": 1.0
+   },
+   "Solo resultado (y)": {
+    "f1_mean": 0.8310866666653725,
+    "f1_ci": [
+     0.7929354861899226,
+     0.8633351622976246
+    ],
+    "label_agreement": 0.838204656862745,
+    "pred_agreement": 1.0,
+    "share_pred_stable_95": 1.0,
+    "share_label_stable_95": 0.36642156862745096
+   },
+   "X e y independientes": {
+    "f1_mean": 0.7394149581138347,
+    "f1_ci": [
+     0.695086247966347,
+     0.7799834910034517
+    ],
+    "label_agreement": 0.838204656862745,
+    "pred_agreement": 0.6934803921568627,
+    "share_pred_stable_95": 0.17769607843137256,
+    "share_label_stable_95": 0.36642156862745096
+   },
+   "X e y comonótonos": {
+    "f1_mean": 0.9197535856208231,
+    "f1_ci": [
+     0.8916873514234878,
+     0.945288439868783
+    ],
+    "label_agreement": 0.836810661764706,
+    "pred_agreement": 0.9084007352941177,
+    "share_pred_stable_95": 0.633578431372549,
+    "share_label_stable_95": 0.36764705882352944
+   }
+  },
+  "median_se_obesity": 1.6837043945705128,
+  "median_ci_halfwidth_obesity": 3.3000000000000007,
+  "class_widths_pp": [
+   12.6,
+   4.5,
+   7.300000000000001,
+   16.799999999999997
+  ],
+  "median_relative_se_X": 0.07335869886495897
+ },
+ "R3_svi_match": 1630,
+ "R3_mrp": [
+  {
+   "set": "Demográficas (proxy MRP)",
+   "scheme": "Aleatoria",
+   "f1": 0.8494926050607496,
+   "f1_sd": 0.02740824213922678,
+   "r2": 0.9636797444539248,
+   "r2_sd": 0.007086809870483821
+  },
+  {
+   "set": "Demográficas (proxy MRP)",
+   "scheme": "Bloques espaciales",
+   "f1": 0.7981896136701924,
+   "f1_sd": 0.047699073506967574,
+   "r2": 0.9244819590339443,
+   "r2_sd": 0.06371150421434046
+  },
+  {
+   "set": "13 determinantes (SP-5)",
+   "scheme": "Aleatoria",
+   "f1": 0.9335052079513465,
+   "f1_sd": 0.016431226792338268,
+   "r2": 0.9618352872103909,
+   "r2_sd": 0.007011143786868019
+  },
+  {
+   "set": "13 determinantes (SP-5)",
+   "scheme": "Bloques espaciales",
+   "f1": 0.9035441837127174,
+   "f1_sd": 0.02317810432230699,
+   "r2": 0.9020046228353038,
+   "r2_sd": 0.08310725080781024
+  },
+  {
+   "set": "Demográficas + determinantes",
+   "scheme": "Aleatoria",
+   "f1": 0.9438089170424305,
+   "f1_sd": 0.013828370518997631,
+   "r2": 0.9940834947713622,
+   "r2_sd": 0.0006767497470066589
+  },
+  {
+   "set": "Demográficas + determinantes",
+   "scheme": "Bloques espaciales",
+   "f1": 0.9405231322878537,
+   "f1_sd": 0.022685821396093882,
+   "r2": 0.9851960640674788,
+   "r2_sd": 0.014881179412127308
+  }
+ ],
+ "R3_partial": [
+  {
+   "code": "pct_no_health_insurance",
+   "label": "Sin seguro médico",
+   "rho": 0.766373463879,
+   "rho_partial": 0.4934134251383917
+  },
+  {
+   "code": "pct_food_insecurity",
+   "label": "Inseguridad alimentaria",
+   "rho": 0.8500731769012992,
+   "rho_partial": 0.6239597609677596
+  },
+  {
+   "code": "pct_food_stamps",
+   "label": "Ayuda alimentaria (SNAP)",
+   "rho": 0.8695918741566301,
+   "rho_partial": 0.6877121139491428
+  },
+  {
+   "code": "pct_housing_insecurity",
+   "label": "Inseguridad de vivienda",
+   "rho": 0.8646290636338989,
+   "rho_partial": 0.7103433989788485
+  },
+  {
+   "code": "pct_utility_shutoff",
+   "label": "Amenaza de corte de servicios",
+   "rho": 0.8852617616104215,
+   "rho_partial": 0.7571033251830422
+  },
+  {
+   "code": "pct_no_transportation",
+   "label": "Falta de transporte",
+   "rho": 0.8410703106015167,
+   "rho_partial": 0.6197972568580485
+  },
+  {
+   "code": "pct_lack_social_support",
+   "label": "Falta de apoyo social",
+   "rho": 0.7594022274360206,
+   "rho_partial": 0.4391031746560154
+  },
+  {
+   "code": "pct_loneliness",
+   "label": "Soledad",
+   "rho": 0.4543462276199917,
+   "rho_partial": 0.2154120347303724
+  },
+  {
+   "code": "pct_routine_checkup",
+   "label": "Chequeo médico anual",
+   "rho": 0.13319928642167547,
+   "rho_partial": 0.2664978998508941
+  },
+  {
+   "code": "pct_cholesterol_screening",
+   "label": "Cribado de colesterol",
+   "rho": -0.4648132058839898,
+   "rho_partial": 0.07804001228285994
+  },
+  {
+   "code": "pct_smoking",
+   "label": "Tabaquismo",
+   "rho": 0.8791846448362373,
+   "rho_partial": 0.56503597596022
+  },
+  {
+   "code": "pct_inactivity",
+   "label": "Inactividad física",
+   "rho": 0.8163507774748185,
+   "rho_partial": 0.53659889318863
+  },
+  {
+   "code": "pct_binge_drinking",
+   "label": "Consumo excesivo de alcohol",
+   "rho": -0.706970346318956,
+   "rho_partial": -0.2925335953659863
+  }
+ ],
+ "R4_index_validity": [
+  {
+   "index": "Índice original (27 indicadores, incluye resultados)",
+   "outcome": "Obesidad (PLACES)",
+   "n": 1632,
+   "rho": -0.8759286327792868,
+   "ci": [
+    -0.8885771439209846,
+    -0.8619492429788957
+   ]
+  },
+  {
+   "index": "Índice original (27 indicadores, incluye resultados)",
+   "outcome": "Esperanza de vida 2010–2015 (USALEEP)",
+   "n": 1175,
+   "rho": 0.7479454853603851,
+   "ci": [
+    0.7180023238719596,
+    0.775125379012619
+   ]
+  },
+  {
+   "index": "Índice original (27 indicadores, incluye resultados)",
+   "outcome": "SVI 2022 (percentil global)",
+   "n": 1629,
+   "rho": -0.8559294088777241,
+   "ci": [
+    -0.8704017592434087,
+    -0.8399791859813203
+   ]
+  },
+  {
+   "index": "Índice SDOH (16 indicadores, sin resultados)",
+   "outcome": "Obesidad (PLACES)",
+   "n": 1632,
+   "rho": -0.8021709816694303,
+   "ci": [
+    -0.8212034782370857,
+    -0.7813557448463658
+   ]
+  },
+  {
+   "index": "Índice SDOH (16 indicadores, sin resultados)",
+   "outcome": "Esperanza de vida 2010–2015 (USALEEP)",
+   "n": 1175,
+   "rho": 0.6986800351109698,
+   "ci": [
+    0.664516698476774,
+    0.7299288784191457
+   ]
+  },
+  {
+   "index": "Índice SDOH (16 indicadores, sin resultados)",
+   "outcome": "SVI 2022 (percentil global)",
+   "n": 1629,
+   "rho": -0.8409532302981291,
+   "ci": [
+    -0.8567434999214637,
+    -0.8235878619645763
+   ]
+  }
+ ],
+ "R4_obesity_in_index": true,
+ "R5_h2": {
+  "hospitals": 52,
+  "beds": 19415,
+  "by_state": {
+   "count": {
+    "IL": 40,
+    "NY": 12
+   },
+   "sum": {
+    "IL": 11148.0,
+    "NY": 8267.0
+   }
+  },
+  "dist_nearest_km": {
+   "median": 2.266145420642932,
+   "p95": 7.91414522575365,
+   "max": 16.89181533719318
+  },
+  "primary": {
+   "d0": 15.0,
+   "w": 0.3,
+   "n": 1632,
+   "rho_none": 0.8021709816694303,
+   "rho_binary": 0.8825248159424721,
+   "rho_decay": 0.8741444369287374,
+   "delta": -0.008380379013734673,
+   "rho_access_binary": -0.2826630988182768,
+   "rho_access_decay": -0.29679646620158,
+   "acc_binary_zero_share": 0.0006127450980392157,
+   "acc_decay_zero_share": 0.0006127450980392157,
+   "boot_ci": [
+    -0.03424181369023045,
+    0.01737927761109816
+   ],
+   "boot_p_two_sided": 0.553,
+   "zou_ci": [
+    -0.015255326413248756,
+    -0.001702614730997246
+   ],
+   "r_binary_decay": 0.9551867393509604,
+   "perm_obs": -0.008380379013734673,
+   "perm_p": 0.04897551224387806
+  },
+  "by_county": {
+   "Cook County": {
+    "d0": 15.0,
+    "w": 0.3,
+    "n": 1328,
+    "rho_none": 0.879017343657537,
+    "rho_binary": 0.8215094643833346,
+    "rho_decay": 0.838222006831385,
+    "delta": 0.016712542448050427,
+    "rho_access_binary": 0.17671752383459444,
+    "rho_access_decay": 0.12071647168694949,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157,
+    "boot_ci": [
+     -0.012318831111978812,
+     0.04476483801084673
+    ],
+    "boot_p_two_sided": 0.249,
+    "zou_ci": [
+     0.007974659037215656,
+     0.025940708826493002
+    ],
+    "r_binary_decay": 0.9551871259296747,
+    "perm_obs": 0.016712542448050427,
+    "perm_p": 0.0004997501249375312
+   },
+   "New York County": {
+    "d0": 15.0,
+    "w": 0.3,
+    "n": 304,
+    "rho_none": 0.7416592364525612,
+    "rho_binary": 0.7450249805429536,
+    "rho_decay": 0.7313270407683334,
+    "delta": -0.013697939774620194,
+    "rho_access_binary": -0.17005865085229996,
+    "rho_access_decay": -0.43613759208202707,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157,
+    "boot_ci": [
+     -0.060005121177769065,
+     0.026292754076983282
+    ],
+    "boot_p_two_sided": 0.447,
+    "zou_ci": [
+     -0.03958323225917133,
+     0.010669941191066824
+    ],
+    "r_binary_decay": 0.9506975115112891,
+    "perm_obs": -0.013697939774620194,
+    "perm_p": 0.20189905047476261
+   }
+  },
+  "radius_sweep": [
+   {
+    "d0": 2,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.7905659675199658,
+    "rho_decay": 0.7923700393333822,
+    "delta": 0.0018040718134164635,
+    "rho_access_binary": -0.24846280629553244,
+    "rho_access_decay": -0.239636013486114,
+    "acc_binary_zero_share": 0.5716911764705882,
+    "acc_decay_zero_share": 0.5716911764705882
+   },
+   {
+    "d0": 3,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.7282961149707948,
+    "rho_decay": 0.7899866934250164,
+    "delta": 0.061690578454221545,
+    "rho_access_binary": -0.21628954399080463,
+    "rho_access_decay": -0.20713279264253456,
+    "acc_binary_zero_share": 0.3602941176470588,
+    "acc_decay_zero_share": 0.3602941176470588
+   },
+   {
+    "d0": 5,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.7668366132607742,
+    "rho_decay": 0.7571683811786338,
+    "delta": -0.009668232082140404,
+    "rho_access_binary": -0.2752558953395551,
+    "rho_access_decay": -0.2274946532990359,
+    "acc_binary_zero_share": 0.17279411764705882,
+    "acc_decay_zero_share": 0.17279411764705882
+   },
+   {
+    "d0": 10,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.8341586652941315,
+    "rho_decay": 0.8246159144626665,
+    "delta": -0.009542750831465052,
+    "rho_access_binary": -0.30664132707107694,
+    "rho_access_decay": -0.3247405725895905,
+    "acc_binary_zero_share": 0.017769607843137254,
+    "acc_decay_zero_share": 0.017769607843137254
+   },
+   {
+    "d0": 15,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.8825248159424721,
+    "rho_decay": 0.8741444369287374,
+    "delta": -0.008380379013734673,
+    "rho_access_binary": -0.2826630988182768,
+    "rho_access_decay": -0.29679646620158,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157
+   },
+   {
+    "d0": 20,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.889563185790074,
+    "rho_decay": 0.894229053924343,
+    "delta": 0.004665868134269058,
+    "rho_access_binary": -0.2400101606660584,
+    "rho_access_decay": -0.2836679903496387,
+    "acc_binary_zero_share": 0.0,
+    "acc_decay_zero_share": 0.0
+   },
+   {
+    "d0": 30,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.8877684245794452,
+    "rho_decay": 0.8996828157727025,
+    "delta": 0.011914391193257323,
+    "rho_access_binary": -0.33794696858618595,
+    "rho_access_decay": -0.3009468195800784,
+    "acc_binary_zero_share": 0.0,
+    "acc_decay_zero_share": 0.0
+   }
+  ],
+  "weight_sweep": [
+   {
+    "d0": 15.0,
+    "w": 0.1,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.8683758635157293,
+    "rho_decay": 0.8577617915219048,
+    "delta": -0.01061407199382447,
+    "rho_access_binary": -0.2826630988182768,
+    "rho_access_decay": -0.29679646620158,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157
+   },
+   {
+    "d0": 15.0,
+    "w": 0.2,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.9012481386078905,
+    "rho_decay": 0.8850136470463645,
+    "delta": -0.01623449156152601,
+    "rho_access_binary": -0.2826630988182768,
+    "rho_access_decay": -0.29679646620158,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157
+   },
+   {
+    "d0": 15.0,
+    "w": 0.3,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.8825248159424721,
+    "rho_decay": 0.8741444369287374,
+    "delta": -0.008380379013734673,
+    "rho_access_binary": -0.2826630988182768,
+    "rho_access_decay": -0.29679646620158,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157
+   },
+   {
+    "d0": 15.0,
+    "w": 0.5,
+    "n": 1632,
+    "rho_none": 0.8021709816694303,
+    "rho_binary": 0.6893566922057341,
+    "rho_decay": 0.7181696411084597,
+    "delta": 0.028812948902725566,
+    "rho_access_binary": -0.2826630988182768,
+    "rho_access_decay": -0.29679646620158,
+    "acc_binary_zero_share": 0.0006127450980392157,
+    "acc_decay_zero_share": 0.0006127450980392157
+   }
+  ],
+  "life_expectancy": {
+   "d0": 15.0,
+   "w": 0.3,
+   "n": 1175,
+   "rho_none": 0.6986800351109698,
+   "rho_binary": 0.6239491022159339,
+   "rho_decay": 0.6025155568597544,
+   "delta": -0.021433545356179473,
+   "rho_access_binary": -0.20152898846967282,
+   "rho_access_decay": -0.2502091772247542,
+   "acc_binary_zero_share": 0.0006127450980392157,
+   "acc_decay_zero_share": 0.0006127450980392157,
+   "boot_ci": [
+    -0.051490746740640594,
+    0.006427128885736555
+   ],
+   "boot_p_two_sided": 0.135,
+   "zou_ci": [
+    -0.03565134142432874,
+    -0.007738506331551525
+   ],
+   "r_binary_decay": 0.953592662263354,
+   "perm_obs": -0.021433545356179473,
+   "perm_p": 0.0024987506246876563
+  },
+  "old_permutation_p_reproduced": 0.5369261477045908
+ },
+ "R6_data_clusters": {
+  "Sin seguro médico": 1,
+  "Inseguridad alimentaria": 1,
+  "Ayuda alimentaria (SNAP)": 1,
+  "Inseguridad de vivienda": 1,
+  "Amenaza de corte de servicios": 1,
+  "Falta de transporte": 1,
+  "Falta de apoyo social": 1,
+  "Soledad": 1,
+  "Chequeo médico anual": 3,
+  "Cribado de colesterol": 2,
+  "Tabaquismo": 1,
+  "Inactividad física": 1,
+  "Consumo excesivo de alcohol": 4
+ },
+ "R6_importance": {
+  "base_f1_test": 0.9358210564764358,
+  "features": [
+   {
+    "code": "pct_no_health_insurance",
+    "label": "Sin seguro médico",
+    "group": "Acceso y prevención",
+    "perm": 0.3820306187204396,
+    "perm_sd": 0.02038178767983137,
+    "cond": 0.18005070657278596,
+    "cond_sd": 0.01769069142457952,
+    "shap": 6.767991371165953,
+    "shap_rank_median": 6.0,
+    "shap_rank_lo": 5.0,
+    "shap_rank_hi": 8.0,
+    "perm_rank": 6.0
+   },
+   {
+    "code": "pct_food_insecurity",
+    "label": "Inseguridad alimentaria",
+    "group": "Privación material",
+    "perm": 0.5086632768873517,
+    "perm_sd": 0.025225637419939037,
+    "cond": 0.12505649199970809,
+    "cond_sd": 0.015641501131215287,
+    "shap": 13.158619376818296,
+    "shap_rank_median": 2.0,
+    "shap_rank_lo": 1.0,
+    "shap_rank_hi": 4.0,
+    "perm_rank": 3.0
+   },
+   {
+    "code": "pct_food_stamps",
+    "label": "Ayuda alimentaria (SNAP)",
+    "group": "Privación material",
+    "perm": 0.3398000307756476,
+    "perm_sd": 0.02231820022759443,
+    "cond": 0.033602523365618406,
+    "cond_sd": 0.009783507094839116,
+    "shap": 3.391516968768186,
+    "shap_rank_median": 9.0,
+    "shap_rank_lo": 7.0,
+    "shap_rank_hi": 12.524999999999991,
+    "perm_rank": 7.0
+   },
+   {
+    "code": "pct_housing_insecurity",
+    "label": "Inseguridad de vivienda",
+    "group": "Privación material",
+    "perm": 0.5848316024897249,
+    "perm_sd": 0.02407858034196187,
+    "cond": 0.13127668702759748,
+    "cond_sd": 0.014509672062287005,
+    "shap": 12.834857075071293,
+    "shap_rank_median": 3.0,
+    "shap_rank_lo": 1.0,
+    "shap_rank_hi": 4.0,
+    "perm_rank": 1.0
+   },
+   {
+    "code": "pct_utility_shutoff",
+    "label": "Amenaza de corte de servicios",
+    "group": "Privación material",
+    "perm": 0.559520740264478,
+    "perm_sd": 0.021029186777022407,
+    "cond": 0.17404620213704042,
+    "cond_sd": 0.020244238148826366,
+    "shap": 14.411986133392793,
+    "shap_rank_median": 1.0,
+    "shap_rank_lo": 1.0,
+    "shap_rank_hi": 3.0,
+    "perm_rank": 2.0
+   },
+   {
+    "code": "pct_no_transportation",
+    "label": "Falta de transporte",
+    "group": "Privación material",
+    "perm": 0.2602473474527726,
+    "perm_sd": 0.024575834403075914,
+    "cond": 0.08973562534063681,
+    "cond_sd": 0.014229149139011956,
+    "shap": 6.580050750394199,
+    "shap_rank_median": 7.0,
+    "shap_rank_lo": 5.0,
+    "shap_rank_hi": 9.0,
+    "perm_rank": 8.0
+   },
+   {
+    "code": "pct_lack_social_support",
+    "label": "Falta de apoyo social",
+    "group": "Contexto social",
+    "perm": 0.07754788871450342,
+    "perm_sd": 0.014550652777425243,
+    "cond": 0.0073542288429371385,
+    "cond_sd": 0.01056328106335055,
+    "shap": 1.2640892603932052,
+    "shap_rank_median": 11.0,
+    "shap_rank_lo": 10.0,
+    "shap_rank_hi": 13.0,
+    "perm_rank": 12.0
+   },
+   {
+    "code": "pct_loneliness",
+    "label": "Soledad",
+    "group": "Contexto social",
+    "perm": 0.25262817147452116,
+    "perm_sd": 0.01889290037013018,
+    "cond": 0.12915685065259866,
+    "cond_sd": 0.012680211911198079,
+    "shap": 4.71767945530234,
+    "shap_rank_median": 8.0,
+    "shap_rank_lo": 5.0,
+    "shap_rank_hi": 10.0,
+    "perm_rank": 9.0
+   },
+   {
+    "code": "pct_routine_checkup",
+    "label": "Chequeo médico anual",
+    "group": "Acceso y prevención",
+    "perm": 0.07402073412763552,
+    "perm_sd": 0.010295972275674333,
+    "cond": 0.06839888812302221,
+    "cond_sd": 0.014006907352940023,
+    "shap": 1.4141950080698904,
+    "shap_rank_median": 13.0,
+    "shap_rank_lo": 10.0,
+    "shap_rank_hi": 13.0,
+    "perm_rank": 13.0
+   },
+   {
+    "code": "pct_cholesterol_screening",
+    "label": "Cribado de colesterol",
+    "group": "Acceso y prevención",
+    "perm": 0.12383147258196615,
+    "perm_sd": 0.012881045176337863,
+    "cond": 0.06901792596910887,
+    "cond_sd": 0.013678689771115173,
+    "shap": 1.9435745606099029,
+    "shap_rank_median": 12.0,
+    "shap_rank_lo": 10.0,
+    "shap_rank_hi": 13.0,
+    "perm_rank": 11.0
+   },
+   {
+    "code": "pct_smoking",
+    "label": "Tabaquismo",
+    "group": "Conductas",
+    "perm": 0.387033012834796,
+    "perm_sd": 0.019179824437764913,
+    "cond": 0.1281722463800681,
+    "cond_sd": 0.013371430431951598,
+    "shap": 7.09213973538048,
+    "shap_rank_median": 5.0,
+    "shap_rank_lo": 5.0,
+    "shap_rank_hi": 7.5249999999999915,
+    "perm_rank": 4.0
+   },
+   {
+    "code": "pct_inactivity",
+    "label": "Inactividad física",
+    "group": "Conductas",
+    "perm": 0.3822640161699082,
+    "perm_sd": 0.022674801528898045,
+    "cond": 0.1881305135996004,
+    "cond_sd": 0.014114464380985872,
+    "shap": 11.049351685064734,
+    "shap_rank_median": 4.0,
+    "shap_rank_lo": 2.0,
+    "shap_rank_hi": 4.0,
+    "perm_rank": 5.0
+   },
+   {
+    "code": "pct_binge_drinking",
+    "label": "Consumo excesivo de alcohol",
+    "group": "Conductas",
+    "perm": 0.23172025940992966,
+    "perm_sd": 0.01889203122268092,
+    "cond": 0.15825861323227083,
+    "cond_sd": 0.01580795196818806,
+    "shap": 3.6888180133124293,
+    "shap_rank_median": 10.0,
+    "shap_rank_lo": 7.475,
+    "shap_rank_hi": 13.0,
+    "perm_rank": 10.0
+   }
+  ],
+  "groups": [
+   {
+    "group": "Privación material",
+    "members": [
+     "Inseguridad alimentaria",
+     "Ayuda alimentaria (SNAP)",
+     "Inseguridad de vivienda",
+     "Amenaza de corte de servicios",
+     "Falta de transporte"
+    ],
+    "n": 5,
+    "perm_group": 0.5010507360527691,
+    "perm_group_sd": 0.020373022100097872,
+    "drop_refit": 0.06610525926613686,
+    "drop_refit_sd": 0.019847298327206404,
+    "shap_group": 50.377030304444766,
+    "shap_group_rank_median": 1.0,
+    "shap_group_top1_share": 1.0
+   },
+   {
+    "group": "Acceso y prevención",
+    "members": [
+     "Sin seguro médico",
+     "Chequeo médico anual",
+     "Cribado de colesterol"
+    ],
+    "n": 3,
+    "perm_group": 0.4374910306969298,
+    "perm_group_sd": 0.024166649045729516,
+    "drop_refit": 0.029372706862751508,
+    "drop_refit_sd": 0.015533008261210563,
+    "shap_group": 10.125760939845748,
+    "shap_group_rank_median": 3.0,
+    "shap_group_top1_share": 0.0
+   },
+   {
+    "group": "Conductas",
+    "members": [
+     "Tabaquismo",
+     "Inactividad física",
+     "Consumo excesivo de alcohol"
+    ],
+    "n": 3,
+    "perm_group": 0.3366882168422433,
+    "perm_group_sd": 0.024048539430432222,
+    "drop_refit": 0.020930092310291637,
+    "drop_refit_sd": 0.01709877462209904,
+    "shap_group": 21.83030943375764,
+    "shap_group_rank_median": 2.0,
+    "shap_group_top1_share": 0.0
+   },
+   {
+    "group": "Contexto social",
+    "members": [
+     "Falta de apoyo social",
+     "Soledad"
+    ],
+    "n": 2,
+    "perm_group": 0.2504252817369671,
+    "perm_group_sd": 0.020741254387126214,
+    "drop_refit": 0.0032395508232250236,
+    "drop_refit_sd": 0.017327257603781687,
+    "shap_group": 5.981768715695545,
+    "shap_group_rank_median": 4.0,
+    "shap_group_top1_share": 0.0
+   }
+  ],
+  "kendall_W_bootstrap": 0.9280021978021978,
+  "top3_original_perm": [
+   "Inseguridad de vivienda",
+   "Amenaza de corte de servicios",
+   "Inseguridad alimentaria"
+  ],
+  "top3_shap": [
+   "Amenaza de corte de servicios",
+   "Inseguridad alimentaria",
+   "Inseguridad de vivienda"
+  ],
+  "top3_stability_share": 0.73,
+  "vif_note": "VIF > 1000 en 4 variables (artículo, Sección 4.4)"
+ },
+ "R7_h1": {
+  "e2e_live": {
+   "ingesta": {
+    "median": 0.2544576384998436,
+    "p95": 0.2598705412501204
+   },
+   "etl": {
+    "median": 0.029417827499855775,
+    "p95": 0.03399696194987882
+   },
+   "indice": {
+    "median": 0.0022483399998236564,
+    "p95": 0.0026206673501292244
+   },
+   "prediccion": {
+    "median": 0.000834305499893162,
+    "p95": 0.0009320726001760703
+   },
+   "serializacion": {
+    "median": 0.007087009999850125,
+    "p95": 0.008508761900179705
+   },
+   "total": {
+    "median": 0.29539671899988207,
+    "p95": 0.3055520750500591
+   },
+   "bytes": {
+    "median": 382520.0,
+    "p95": 382520.0
+   }
+  },
+  "e2e_retro": {
+   "ingesta": {
+    "median": 0.2531762809999236,
+    "p95": 0.2609533552500807
+   },
+   "etl": {
+    "median": 0.029661209000096278,
+    "p95": 0.033708588999888885
+   },
+   "indice": {
+    "median": 0.08734493149995615,
+    "p95": 0.09118787850002263
+   },
+   "prediccion": {
+    "median": 0.00105158700011998,
+    "p95": 0.0012095585998167734
+   },
+   "serializacion": {
+    "median": 0.007168793999653644,
+    "p95": 0.010365991300091073
+   },
+   "total": {
+    "median": 0.3801349279999613,
+    "p95": 0.39032615615014943
+   },
+   "bytes": {
+    "median": 382520.0,
+    "p95": 382520.0
+   }
+  },
+  "e2e_delta_median_ci": [
+   0.08095628450018921,
+   0.08898401500005093
+  ],
+  "e2e_wilcoxon": {
+   "W": 0.0,
+   "p": 1.862645149230957e-09
+  },
+  "e2e_speedup": 1.2868623906418983,
+  "alg_live_median_ms": 0.90823100003945,
+  "alg_retro_median_ms": 86.24889349994191,
+  "alg_wilcoxon_p": 1.862645149230957e-09,
+  "hardware": "Intel Core i7-1065G7 (4 núcleos/8 hilos, 1,3 GHz), 10 GB RAM, Linux; Python 3.14.4"
+ },
+ "R8_power": {
+  "H4_power": 1.0,
+  "H4_null_crit_f1": 0.29005229690659845,
+  "NB_LR_GB_delta": 0.011925543580485943,
+  "NB_MDE_80": 0.02088503222311507,
+  "NB_power_observed": 0.361808752357576,
+  "McNemar_n_required_80": 5986.335891223295,
+  "H2_MDE_delta_rho": 0.03687220807237757,
+  "H3_cp_upper_exceed_share": 0.09503385285530411,
+  "H1_e2e_effect_r": 1.0
+ },
+ "R9_grid_C": [
+  {
+   "C": 1.0,
+   "f1_cv": 0.8566574530449594,
+   "sd": 0.023361892362178893
+  },
+  {
+   "C": 10.0,
+   "f1_cv": 0.9093020434786657,
+   "sd": 0.019202443982701368
+  },
+  {
+   "C": 100.0,
+   "f1_cv": 0.9270641400397729,
+   "sd": 0.01979151470880292
+  },
+  {
+   "C": 1000.0,
+   "f1_cv": 0.9324731719802912,
+   "sd": 0.011417028755032893
+  },
+  {
+   "C": 10000.0,
+   "f1_cv": 0.9332634016621849,
+   "sd": 0.016503218337475915
+  },
+  {
+   "C": 100000.0,
+   "f1_cv": 0.9332772651018104,
+   "sd": 0.01588964415315606
+  }
+ ]
+}

@@ -41,3 +41,14 @@ Thumbs.db
 
 # Modelos ML entrenados (se regeneran con make train)
 backend/ml_artifacts/**/*.joblib
+
+# Documentos del artículo (Word/PDF) y archivos de bloqueo de LibreOffice/Word
+*.docx
+*.pdf
+.~lock.*
+~$*
+
+# Figuras por panel y reportes generados por la app
+backend/article_outputs/paneles/
+backend/generated_reports/*
+!backend/generated_reports/.gitkeep

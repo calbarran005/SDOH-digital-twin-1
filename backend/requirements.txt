@@ -28,3 +28,4 @@ joblib==1.4.2
 pyproj==3.6.1
 python-dateutil==2.9.0.post0
 streamlit>=1.40
+statsmodels==0.15.0

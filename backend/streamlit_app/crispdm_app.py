@@ -35,6 +35,9 @@ nav = st.navigation(
             st.Page(os.path.join(V, "despliegue.py"), title="VI. Despliegue: predicción", icon="🚀"),
             st.Page(os.path.join(V, "reporte.py"), title="VI. Reporte PDF", icon="📄"),
         ],
+        "Artículo": [
+            st.Page(os.path.join(V, "figuras_articulo.py"), title="Figuras del artículo", icon="🖼️"),
+        ],
         "Inteligencia artificial": [
             st.Page(os.path.join(V, "langchain_view.py"), title="Asistente LangChain", icon="🦜"),
             st.Page(os.path.join(V, "langflow_view.py"), title="LangFlow", icon="🌊"),

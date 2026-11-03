@@ -167,9 +167,13 @@ def spearman_ci(x, y):
     return float(r), float(np.tanh(z - 1.96 * se)), float(np.tanh(z + 1.96 * se))
 
 
-def save(fig, name):
+def save(fig, name, axes=None, title=""):
+    """Guarda la figura compuesta y cada panel por separado (con y sin título, 300 dpi)."""
+    from engine import figexport
+
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches="tight")
+    figexport.export_panels(fig, axes, os.path.splitext(name)[0], os.path.dirname(OUT), title)
     plt.close(fig)
 
 
@@ -792,7 +796,7 @@ axes[2].set_ylabel("F1-macro")
 axes[2].set_ylim(0, 1)
 axes[2].legend(fontsize=7, frameon=True, framealpha=0.95, loc="center right", bbox_to_anchor=(1.0, 0.62))
 axes[2].set_title("(c) Validación aleatoria vs. espacial", color=INK)
-save(fig, "figR1_validacion_espacial.png")
+save(fig, "figR1_validacion_espacial.png", axes, "Figura 5. Validación espacial del modelo")
 
 # Figura B: incertidumbre y covariables MRP
 fig, axes = plt.subplots(1, 3, figsize=(15, 4.4))
@@ -820,7 +824,7 @@ axes[2].set_ylabel("F1-macro (regresión logística)")
 axes[2].set_ylim(0, 1)
 axes[2].legend(fontsize=7, frameon=False, loc="lower right")
 axes[2].set_title("(c) Control de covariables compartidas", color=INK)
-save(fig, "figR2_incertidumbre_mrp.png")
+save(fig, "figR2_incertidumbre_mrp.png", axes, "Figura 6. Incertidumbre de la fuente y covariables compartidas")
 
 # Figura C: importancia agrupada/condicional
 fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.2))
@@ -843,7 +847,7 @@ axes[1].set_yticklabels(lab_g, fontsize=7)
 axes[1].set_xlabel("Caída del F1-macro")
 axes[1].legend(fontsize=7, frameon=False, loc="lower right")
 axes[1].set_title("(b) Importancia por dominio de determinantes", color=INK)
-save(fig, "figR3_importancia_agrupada.png")
+save(fig, "figR3_importancia_agrupada.png", axes, "Figura 7. Importancia con control de la multicolinealidad")
 
 # Figura D (reemplaza Fig. 10): mapa con red real + H2
 fig, axes = plt.subplots(1, 3, figsize=(15, 4.9), gridspec_kw={"width_ratios": [1, 0.6, 1.2]})
@@ -870,7 +874,7 @@ axes[2].set_xlabel("Radio de captación d₀ (km)")
 axes[2].set_ylabel("|ρ| con obesidad observada")
 axes[2].legend(fontsize=7, frameon=True, loc="lower right")
 axes[2].set_title("(c) H2 con 52 hospitales reales (w = 0,30)", color=INK)
-save(fig, "figR4_h2_red_real.png")
+save(fig, "figR4_h2_red_real.png", axes, "Figura 8. Salida espacial del gemelo y contraste de H2")
 
 with open(os.path.join(OUT, "revision_results.json"), "w", encoding="utf-8") as fh:
     json.dump(R, fh, ensure_ascii=False, indent=1, default=lambda o: o.tolist() if hasattr(o, "tolist") else str(o))

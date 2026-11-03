@@ -48,6 +48,9 @@ class ReportItem:
     png_hires: Optional[bytes] = None
     svg: Optional[bytes] = None
     pdf: Optional[bytes] = None
+    png_nt: Optional[bytes] = None  # variantes sin título (300 dpi / vectoriales)
+    svg_nt: Optional[bytes] = None
+    pdf_nt: Optional[bytes] = None
     table: Optional[pd.DataFrame] = None
     llm_text: Optional[str] = None
     order: int = 0

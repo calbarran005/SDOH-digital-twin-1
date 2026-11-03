@@ -98,21 +98,28 @@ def slugify(text: str) -> str:
     return keep.strip("-") or "figura"
 
 
-def download_figure(item: ReportItem, key: str) -> None:
-    """Botones para bajar la figura en máxima calidad (PNG 300 dpi + SVG/PDF vectorial)."""
-    options = [
-        ("⬇️ PNG · 300 dpi", item.png_hires, "png", "image/png"),
-        ("⬇️ SVG · vectorial", item.svg, "svg", "image/svg+xml"),
-        ("⬇️ PDF · vectorial", item.pdf, "pdf", "application/pdf"),
-    ]
-    options = [o for o in options if o[1]]
+def download_buttons(files, slug: str, key: str) -> None:
+    """Fila de botones de descarga. ``files`` = {"png": bytes, "svg": bytes, "pdf": bytes}."""
+    labels = {"png": ("⬇️ PNG · 300 dpi", "image/png"), "svg": ("⬇️ SVG · vectorial", "image/svg+xml"),
+              "pdf": ("⬇️ PDF · vectorial", "application/pdf")}
+    options = [(ext, data) for ext, data in files.items() if data]
     if not options:
         return
-    slug = slugify(item.title)
     cols = st.columns(len(options))
-    for col, (label, data, ext, mime) in zip(cols, options):
-        col.download_button(label, data, file_name=f"{slug}.{ext}", mime=mime,
-                            key=f"dl_{ext}_{key}")
+    for col, (ext, data) in zip(cols, options):
+        label, mime = labels[ext]
+        col.download_button(label, data, file_name=f"{slug}.{ext}", mime=mime, key=f"dl_{ext}_{key}")
+
+
+def download_figure(item: ReportItem, key: str) -> None:
+    """Descarga en máxima calidad (PNG 300 dpi + SVG/PDF), con título y sin título."""
+    slug = slugify(item.title)
+    tab_t, tab_nt = st.tabs(["Con título", "Sin título (para el artículo)"])
+    with tab_t:
+        download_buttons({"png": item.png_hires, "svg": item.svg, "pdf": item.pdf}, slug, key)
+    with tab_nt:
+        download_buttons({"png": item.png_nt, "svg": item.svg_nt, "pdf": item.pdf_nt},
+                         slug + "-sin-titulo", key + "_nt")
 
 
 def render(
@@ -127,17 +134,21 @@ def render(
     show_table: bool = True,
 ) -> ReportItem:
     prev: Optional[ReportItem] = st.session_state.report.get(key)
-    png = hires = svg = pdf = None
+    png = hires = svg = pdf = png_nt = svg_nt = pdf_nt = None
     if fig is not None:
         png = to_png(fig)
-        if prev is not None and prev.png == png and prev.png_hires is not None:
+        if prev is not None and prev.png == png and prev.png_hires is not None and prev.png_nt is not None:
             hires, svg, pdf = prev.png_hires, prev.svg, prev.pdf
+            png_nt, svg_nt, pdf_nt = prev.png_nt, prev.svg_nt, prev.pdf_nt
         else:
             q = hi_quality(fig)
             hires, svg, pdf = q["png"], q["svg"], q["pdf"]
+            q = hi_quality(fig, no_title=True)
+            png_nt, svg_nt, pdf_nt = q["png"], q["svg"], q["pdf"]
         plt.close(fig)
     item = ReportItem(key=key, section=section, title=title, how=how, interpretation=interpretation,
-                      png=png, png_hires=hires, svg=svg, pdf=pdf, table=table, order=order,
+                      png=png, png_hires=hires, svg=svg, pdf=pdf,
+                      png_nt=png_nt, svg_nt=svg_nt, pdf_nt=pdf_nt, table=table, order=order,
                       llm_text=prev.llm_text if prev and prev.interpretation == interpretation else None)
     st.session_state.report[key] = item
 

@@ -21,7 +21,7 @@ from sqlalchemy import func  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.models.geo import CensusTract  # noqa: E402
 from app.services import crispdm_service, ml_evaluation  # noqa: E402
-from engine import data, eda, inference as inf, modeling  # noqa: E402
+from engine import data, eda, figexport, inference as inf, modeling  # noqa: E402
 from engine.style import BLUE, GREEN, INK, LEVEL_COLORS, LEVEL_ES, MUTED, RED, plt, short  # noqa: E402
 
 OUT = os.path.join(os.path.dirname(HERE), "article_outputs")
@@ -30,9 +30,11 @@ TARGET = "pct_obesity"
 DPI = 300
 
 
-def save(fig, name):
+def save(fig, name, axes=None, title=""):
+    """Guarda la figura compuesta y, además, cada panel por separado (con y sin título)."""
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, name), dpi=DPI, bbox_inches="tight")
+    figexport.export_panels(fig, axes, os.path.splitext(name)[0], OUT, title)
     plt.close(fig)
 
 
@@ -143,7 +145,7 @@ names = ds.names
 fig, ax = plt.subplots(figsize=(10, 4.6))
 ax.axis("off")
 ax.set_xlim(0, 10.6)
-ax.set_ylim(0.8, 6.5)
+ax.set_ylim(0.8, 6.3)
 layers = [
     (4.75, "#dbeafe", "Capa 1 · Sensado y fuentes",
      "CDC PLACES 2025 (Socrata API, 27 medidas, 1.632 tracts) · Census TIGERweb (geometrías)\n"
@@ -166,11 +168,33 @@ ax.annotate("", xy=(9.9, 5.5), xytext=(9.9, 1.7),
             arrowprops=dict(arrowstyle="-|>", color=RED, lw=1.4, connectionstyle="arc3,rad=0"))
 ax.text(9.95, 3.6, "retroalimentación:\nalertas, escenarios,\nreportes", fontsize=7.5, color=RED, rotation=90,
         va="center", ha="left")
-ax.text(5, 6.35, "Arquitectura SP-5 implementada", fontsize=12, fontweight="bold", ha="center", color=INK)
-save(fig, "fig1_arquitectura.png")
+ax.set_title("Arquitectura SP-5 implementada", fontsize=12, fontweight="bold", color=INK)
+save(fig, "fig1_arquitectura.png", [ax], "Figura 1. Arquitectura de tres capas de SP-5")
 
-# Figura 2: EDA (a) distribución del objetivo (b) Spearman
-fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1, 1.25]})
+# Centroides de los tracts (mapas de las Figuras 2 y 6)
+db = SessionLocal()
+try:
+    pts = pd.DataFrame(db.query(CensusTract.geoid, func.st_x(CensusTract.center), func.st_y(CensusTract.center)).all(),
+                       columns=["geoid", "lon", "lat"])
+finally:
+    db.close()
+
+# Figura 2: EDA (a) distribución del objetivo (b, c) distribución territorial (d) Spearman
+fig, axes = plt.subplots(1, 4, figsize=(19, 5.2), gridspec_kw={"width_ratios": [1, 0.95, 0.55, 1.25]})
+geo = df.merge(pts, on="geoid", how="left")
+vmin, vmax = geo[TARGET].min(), geo[TARGET].max()
+for ax, fips, title in ((axes[1], "Cook County", "(b) Cook County, IL"), (axes[2], "New York County", "(c) New York County, NY")):
+    sub = geo[geo["county"] == fips].sort_values(TARGET)
+    sc = ax.scatter(sub["lon"], sub["lat"], c=sub[TARGET], cmap="YlOrRd", vmin=vmin, vmax=vmax,
+                    s=6 if fips == "Cook County" else 12)
+    ax.set_aspect("equal", adjustable="datalim")
+    ax.set_title(title, color=INK)
+    ax.set_xlabel("Longitud")
+    ax.set_ylabel("Latitud")
+    ax.tick_params(labelsize=7)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(3 if fips == "New York County" else 5))
+fig.colorbar(sc, ax=axes[2], fraction=0.08, label="Obesidad en adultos (%)")
+ax_corr = axes[3]
 s = df[TARGET].dropna()
 axes[0].hist(s, bins=40, color="#bfdbfe", edgecolor="white", density=True)
 from scipy import stats as _st  # noqa: E402
@@ -187,20 +211,20 @@ axes[0].set_ylabel("Densidad")
 axes[0].legend(fontsize=8, frameon=False)
 axes[0].set_title("(a) Distribución del resultado y cortes Q1–Q3", color=INK)
 n = len(corr)
-im = axes[1].imshow(corr.values, cmap="RdBu_r", vmin=-1, vmax=1)
+im = ax_corr.imshow(corr.values, cmap="RdBu_r", vmin=-1, vmax=1)
 lab = [short(names.get(c, c), 20) for c in corr.columns]
-axes[1].set_xticks(range(n))
-axes[1].set_xticklabels(lab, rotation=65, ha="right", fontsize=7)
-axes[1].set_yticks(range(n))
-axes[1].set_yticklabels(lab, fontsize=7)
-axes[1].grid(False)
+ax_corr.set_xticks(range(n))
+ax_corr.set_xticklabels(lab, rotation=65, ha="right", fontsize=7)
+ax_corr.set_yticks(range(n))
+ax_corr.set_yticklabels(lab, fontsize=7)
+ax_corr.grid(False)
 for i in range(n):
     for j in range(n):
-        axes[1].text(j, i, f"{corr.values[i, j]:.2f}", ha="center", va="center", fontsize=5,
+        ax_corr.text(j, i, f"{corr.values[i, j]:.2f}", ha="center", va="center", fontsize=5,
                      color="white" if abs(corr.values[i, j]) > 0.6 else INK)
-fig.colorbar(im, ax=axes[1], fraction=0.04, label="ρ de Spearman")
-axes[1].set_title("(b) Correlación de Spearman entre variables", color=INK)
-save(fig, "fig2_eda.png")
+fig.colorbar(im, ax=ax_corr, fraction=0.04, label="ρ de Spearman")
+ax_corr.set_title("(d) Correlación de Spearman entre variables", color=INK)
+save(fig, "fig2_eda.png", axes, "Figura 2. Análisis exploratorio de la obesidad y los determinantes")
 
 # Figura 3: (a) CV por fold (b) diferencia crítica
 fig, axes = plt.subplots(1, 2, figsize=(12, 4.4))
@@ -231,7 +255,7 @@ axes[1].set_xlim(0.8, f["k"] + 0.2)
 axes[1].set_xlabel("Rango medio (1 = mejor)")
 axes[1].legend(fontsize=8, frameon=True, loc="lower center")
 axes[1].set_title(f"(b) Friedman χ²={f['stat']:.1f}, p={f['p']:.2g}, W={f['kendall_w']:.2f}", color=INK)
-save(fig, "fig3_cv_friedman.png")
+save(fig, "fig3_cv_friedman.png", axes, "Figura 3. Validación cruzada y prueba de Friedman")
 
 # Figura 4: (a) matriz de confusión (b) ROC
 from sklearn.metrics import roc_auc_score, roc_curve  # noqa: E402
@@ -265,7 +289,7 @@ axes[1].set_xlabel("Tasa de falsos positivos")
 axes[1].set_ylabel("Tasa de verdaderos positivos")
 axes[1].legend(fontsize=8, frameon=True, loc="lower center")
 axes[1].set_title("(b) Curvas ROC uno-contra-resto", color=INK)
-save(fig, "fig4_confusion_roc.png")
+save(fig, "fig4_confusion_roc.png", axes, "Figura 4. Matriz de confusión y curvas ROC")
 
 # Figura 5: (a) importancia por permutación (b) Spearman IC95
 fig, axes = plt.subplots(1, 2, figsize=(12, 5.2))
@@ -286,15 +310,9 @@ axes[1].set_yticks(yy)
 axes[1].set_yticklabels([short(v, 30) for v in t["Variable"]], fontsize=8)
 axes[1].set_xlabel("ρ de Spearman con la obesidad (IC 95 %)")
 axes[1].set_title("(b) Asociación bivariada determinante–resultado", color=INK)
-save(fig, "fig5_explicabilidad.png")
+save(fig, "fig5_explicabilidad.png", axes, "Complementaria. Importancia por permutación y asociación de Spearman")
 
 # Figura 6: (a) mapa del gemelo: nivel estimado por tract (b) H2 barrido de radio
-db = SessionLocal()
-try:
-    pts = pd.DataFrame(db.query(CensusTract.geoid, func.st_x(CensusTract.center), func.st_y(CensusTract.center)).all(),
-                       columns=["geoid", "lon", "lat"])
-finally:
-    db.close()
 full = p["data"].merge(pts, on="geoid", how="left")
 full["pred"] = best["estimator"].predict(full[p["features"]])
 fig, axes = plt.subplots(1, 3, figsize=(14, 4.8), gridspec_kw={"width_ratios": [1, 1, 1.1]})
@@ -322,7 +340,7 @@ if h2.get("applicable"):
     axes[2].set_ylabel("|ρ| con obesidad observada")
     axes[2].legend(fontsize=7.5, frameon=True, loc="center right")
     axes[2].set_title("(c) H2: validez según el radio de decaimiento", color=INK)
-save(fig, "fig6_gemelo_h2.png")
+save(fig, "fig6_gemelo_h2.png", axes, "Complementaria. Nivel predicho y H2 con hospitales de demostración")
 
 with open(os.path.join(OUT, "results.json"), "w", encoding="utf-8") as fh:
     json.dump(R, fh, ensure_ascii=False, indent=1, default=jsonable)

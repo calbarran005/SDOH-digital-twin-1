@@ -52,18 +52,23 @@ def to_png(fig, dpi: int = 150) -> bytes:
     return fig_bytes(fig, "png", dpi=dpi)
 
 
-def hi_quality(fig) -> dict:
-    """Variantes de máxima calidad para descargar: PNG 300 dpi y vectores SVG/PDF."""
+def hi_quality(fig, no_title: bool = False) -> dict:
+    """Variantes de máxima calidad para descargar: PNG 300 dpi y vectores SVG/PDF.
+
+    Con ``no_title=True`` se generan sin los títulos de los ejes (listas para el artículo,
+    donde el título va en el pie de figura).
+    """
+    from contextlib import nullcontext
+
+    from engine.figexport import strip_titles
+
     out = {"png": None, "svg": None, "pdf": None}
-    try:
-        out["png"] = to_png(fig, dpi=300)
-    except Exception:
-        pass
-    for fmt in ("svg", "pdf"):
-        try:
-            out[fmt] = fig_bytes(fig, fmt)
-        except Exception:
-            out[fmt] = None
+    with strip_titles(fig) if no_title else nullcontext():
+        for fmt in ("png", "svg", "pdf"):
+            try:
+                out[fmt] = fig_bytes(fig, fmt, dpi=300)
+            except Exception:
+                out[fmt] = None
     return out
 
 
